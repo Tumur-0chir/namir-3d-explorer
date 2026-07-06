@@ -142,6 +142,47 @@ const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
 // ===================================================
+// Iframe-safe navigation
+// ---------------------------------------------------
+// Handles three contexts:
+//   1) Standalone (opened directly at 3d.mekhlopat.mn)  → window.location.href
+//   2) Same-origin iframe                                → window.top.location.href
+//   3) Cross-origin iframe (WordPress ↔ Vercel subdomain) → postMessage to parent
+//
+// The parent WordPress page listens for { type: 'namir3d:navigate', url }
+// and sets window.location.href on receipt.
+// ===================================================
+function navigateTo(url) {
+    if (!url) return;
+    const trimmed = String(url).trim();
+    if (!trimmed || trimmed === '#' || trimmed === 'NA') return;
+    if (!/^https?:\/\//i.test(trimmed)) {
+        // Reject placeholders like "Weblink Is underconstruction!" or relative paths
+        console.warn('[navigateTo] Skipping non-http URL:', trimmed);
+        return;
+    }
+
+    const inIframe = window.self !== window.top;
+
+    if (!inIframe) {
+        window.location.href = trimmed;
+        return;
+    }
+
+    // Iframe path: notify parent (works cross-origin) AND try top navigation (same-origin only)
+    try {
+        window.parent.postMessage({ type: 'namir3d:navigate', url: trimmed }, '*');
+    } catch (e) {
+        console.warn('[navigateTo] postMessage failed:', e);
+    }
+    try {
+        window.top.location.href = trimmed;
+    } catch (e) {
+        // Cross-origin — the parent listener will handle navigation
+    }
+}
+
+// ===================================================
 // NEW: Hotspot CSV Loading and Management
 // ===================================================
 let hotspotData = [];
@@ -1044,15 +1085,11 @@ function showInfoPanel(data) {
     const contactUsBtn = panel.querySelector('#contact-us-btn');
 
     if (learnMoreBtn && data.button1Url) {
-        learnMoreBtn.addEventListener('click', () => {
-            window.open(data.button1Url, '_blank');
-        });
+        learnMoreBtn.addEventListener('click', () => navigateTo(data.button1Url));
     }
 
     if (contactUsBtn && data.button2Url) {
-        contactUsBtn.addEventListener('click', () => {
-            window.open(data.button2Url, '_blank');
-        });
+        contactUsBtn.addEventListener('click', () => navigateTo(data.button2Url));
     }
 
     panel.classList.add('active');
