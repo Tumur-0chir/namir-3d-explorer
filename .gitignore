@@ -32,5 +32,5 @@ dist-ssr
 .env.*
 !.env.example
 
-# Large Files
-*.glb
+# Uncompressed 3D master (65 MB) — kept locally only; runtime uses Draco-compressed version in static/models/glb/
+model-source/
