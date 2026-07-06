@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namir - Products and Services</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./panel-styles.css">
+    <link rel="stylesheet" href="./z-index-fix.css">
+    <link rel="icon" type="image/png" href="/images/logos/Namir_Mekhlopat_logo_NoText.png">
+</head>
+
+<body>
+    <div class="background-gradient"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <p id="loading-text">Loading Model... 0%</p>
+        </div>
+    </div>
+
+    <canvas class="webgl"></canvas>
+    <div class="vignette"></div>
+
+    <!-- ============================================== -->
+    <!-- INSTRUCTIONS DIALOG (Top Left)                 -->
+    <!-- ============================================== -->
+    <div id="instructions-dialog" class="instructions-dialog">
+        <div class="instructions-header">
+            <span class="instructions-title">HOW TO NAVIGATE</span>
+            <button id="instructions-close" class="instructions-close-btn" title="Close">&times;</button>
+        </div>
+        <hr class="instructions-divider">
+        <ul class="instructions-list">
+            <li><span class="instructions-key">Rotate:</span> Left Click + Drag</li>
+            <li><span class="instructions-key">Pan:</span> Right Click + Drag</li>
+            <li><span class="instructions-key">Zoom:</span> Scroll Wheel</li>
+            <li><span class="instructions-key">Explore:</span> Click Hotspots</li>
+        </ul>
+        <div class="sensitivity-container" style="margin: 15px 0;">
+            <label for="sensitivity-slider" class="instructions-key" style="display: block; margin-bottom: 5px;">Sensitivity</label>
+            <input type="range" id="sensitivity-slider" min="0.1" max="2.0" step="0.1" value="1.0" style="width: 100%; cursor: pointer;">
+        </div>
+        <button id="instructions-reset-btn" class="instructions-reset-btn">RESET VIEW</button>
+    </div>
+
+    <!-- Toggle button to reopen instructions -->
+    <button id="instructions-toggle" class="instructions-toggle-btn" title="How to Navigate">?</button>
+
+    <div class="ui-container">
+        <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
+        <div class="top-nav">
+            <img src="/images/logos/Namir_Mekhlopat_logo_03.webp" alt="Mekhlopat Logo" class="logo">
+        </div>
+
+        <!-- Always-visible centered nav bar -->
+        <div id="nav-category-bar" class="nav-category-bar">
+            <!-- Row 1: arrows + category badge (hidden until category active) -->
+            <div id="nav-category-row" class="nav-category-row" style="display:none;">
+                <button id="nav-cat-prev" class="nav-cat-arrow" title="Previous category">&#8592;</button>
+                <div id="nav-category-badge" class="nav-category-badge">
+                    <img id="nav-category-icon" src="" alt="" class="nav-category-icon" />
+                    <span id="nav-category-name" class="nav-category-name"></span>
+                </div>
+                <button id="nav-cat-next" class="nav-cat-arrow" title="Next category">&#8594;</button>
+            </div>
+        </div>
+
+        <!-- Home button: fixed below navbar, overlapping the scene -->
+        <button id="nav-home-btn" class="nav-home-btn" title="Reset View" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+        </button>
+
+        <!-- Left Sidebar Menu -->
+        <div id="left-sidebar" class="left-sidebar">
+            <div class="sidebar-header">
+                <h3>Menu</h3>
+                <button id="close-left-sidebar" class="close-button">&times;</button>
+            </div>
+            <ul class="sidebar-links"></ul>
+        </div>
+
+        <!-- Side Panel -->
+        <div id="info-panel" class="info-panel">
+            <div class="panel-header">
+                <h2>Refuge chamber</h2>
+                <button id="close-panel" class="close-button">&times;</button>
+            </div>
+            <div class="panel-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Instructions Dialog Logic
+        (function () {
+            const dialog = document.getElementById('instructions-dialog');
+            const closeBtn = document.getElementById('instructions-close');
+            const toggleBtn = document.getElementById('instructions-toggle');
+            const resetBtn = document.getElementById('instructions-reset-btn');
+
+            function hideDialog() {
+                dialog.classList.add('hidden');
+                toggleBtn.classList.add('visible');
+            }
+
+            function showDialog() {
+                dialog.classList.remove('hidden');
+                toggleBtn.classList.remove('visible');
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', hideDialog);
+            if (toggleBtn) toggleBtn.addEventListener('click', showDialog);
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    // Call the global resetView function from script.js
+                    if (typeof window.resetView === 'function') {
+                        window.resetView();
+                    }
+                });
+            }
+        })();
+    </script>
+    <script type="module" src="./script.js"></script>
+</body>
+
+</html>

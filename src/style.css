@@ -1,0 +1,1191 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    overflow: hidden;
+}
+
+/* Make this the very bottom layer */
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    /* On top of canvas (which is 1), but below UI container (which is 2 - wait, UI container is 2). Let's make this 1 and move on. Or just inside UI container. */
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.background-gradient {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    /* <-- Sits behind everything */
+
+    /* Example gradient: from a dark blue to a light blue */
+    background: linear-gradient(to bottom, #0B2A3A, #134B63);
+}
+
+/* Make sure the canvas fills the whole screen and stays in the back */
+.webgl {
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+    z-index: 1;
+    /* Send it to the back */
+}
+
+/* This is the main container for all your UI elements */
+.ui-container {
+    position: fixed;
+    /* Position it relative to the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    /* Place it on top of the canvas */
+
+    /* This is the magic part: */
+    /* Let mouse clicks "pass through" the container... */
+    pointer-events: none;
+}
+
+/* Top Navigation Bar */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background-color: white;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    padding-left: 70px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+}
+
+/* Style your logo within the nav */
+.logo {
+    height: 50px;
+    /* Constrain height to fit in nav */
+    width: auto;
+    /* Maintain aspect ratio */
+    pointer-events: auto;
+}
+
+/* Home reset button - floats below the navbar into the scene */
+.nav-home-btn {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #0690ce;
+    background: white;
+    color: #0690ce;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(6, 144, 206, 0.25);
+    transition: background 0.2s, color 0.2s;
+    z-index: 200000;
+    pointer-events: auto;
+}
+
+.nav-home-btn:hover {
+    background: #0690ce;
+    color: white;
+}
+
+
+/* Side Panel Styles */
+.info-panel {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    /* Hidden by default */
+    width: 400px;
+    height: 100%;
+    /* NEW: Theme Blue Background */
+    background-color: #0690ce;
+    color: white;
+    z-index: 10;
+    padding: 40px;
+    box-sizing: border-box;
+    transition: right 0.3s ease-in-out;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Cleaner sans-serif */
+    pointer-events: auto;
+    /* Enable clicks inside the panel */
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+}
+
+.info-panel.active {
+    right: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Center vertically */
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    /* Subtle separator */
+    padding-bottom: 15px;
+}
+
+.panel-header h2 {
+    font-size: 20px;
+    /* Slightly smaller, more refined */
+    font-weight: 600;
+    margin: 0;
+    position: relative;
+    display: inline-block;
+    color: white;
+}
+
+/* REMOVED: Stylish Slash to match new clean design */
+.panel-header h2::after {
+    content: none;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 5px;
+    pointer-events: auto;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-button:hover {
+    opacity: 1;
+}
+
+/* Base state for content elements */
+.info-panel h2,
+.info-panel .panel-content p,
+.info-panel .action-button,
+.info-panel .panel-image-container {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+/* Active state */
+.info-panel.active h2,
+.info-panel.active .panel-content p,
+.info-panel.active .action-button,
+.info-panel.active .panel-image-container {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Stagger delays included in existing CSS... keeping them is fine */
+
+.panel-content p {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    color: white;
+    /* Pure white text */
+}
+
+/* Button Container to push to bottom if needed, or just flow */
+/* We'll stick to flow for now, but style the buttons */
+
+.action-button {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 8px;
+    /* Rounded corners */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    /* NEW: White Button Style (matches Request Quote) */
+    background-color: white;
+    color: #333;
+    text-transform: uppercase;
+    /* Optional: adds to the 'button' feel */
+    letter-spacing: 0.5px;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #f0f0f0;
+    /* Slight off-white on hover */
+}
+
+/* Remove old primary/secondary distinction to make them uniform like the image */
+.action-button.primary {
+    background-color: white;
+    color: #0690ce;
+}
+
+.action-button.secondary {
+    background-color: white;
+    /* Make secondary buttons also white */
+    border: none;
+    /* Remove border */
+    color: #0690ce;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+.loading-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    color: #333;
+    font-family: sans-serif;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ddd;
+    border-top: 5px solid #0690ce;
+    /* Theme Blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.panel-image-container {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.panel-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+    font-size: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    cursor: pointer;
+    margin-right: 0;
+    position: absolute;
+    top: 25px;
+    left: 20px;
+    z-index: 20;
+    color: #333;
+    /* Dark color for visibility on white nav */
+    padding: 0;
+    line-height: 1;
+    pointer-events: auto;
+}
+
+/* Left Sidebar Styles */
+/* Left Sidebar Styles */
+.left-sidebar {
+    position: fixed;
+    top: 80px;
+    /* Starts below the 80px top nav */
+    left: -320px;
+    /* Hidden by default */
+    width: 300px;
+    height: calc(100% - 80px);
+    /* Fill remaining height */
+    background-color: white;
+    color: #333;
+    /* Dark text */
+    z-index: 20;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: left 0.3s ease-in-out;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.left-sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e0e0e0;
+    /* Light border */
+    padding-bottom: 15px;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.sidebar-links {
+    list-style: none;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.sidebar-links li {
+    margin-bottom: 20px;
+}
+
+.sidebar-links a {
+    color: #333;
+    /* Dark link text */
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.sidebar-links a:hover {
+    background-color: #f5f5f5;
+    /* Light grey hover */
+}
+
+/* Ensure close button in white sidebar is visible */
+.left-sidebar .close-button {
+    color: #333;
+}
+
+/* Custom Slider Styling to override native OS colors */
+#sensitivity-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+}
+
+#sensitivity-slider:focus {
+    outline: none;
+}
+
+/* WebKit Track */
+#sensitivity-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #0690ce;
+    border-radius: 3px;
+    border: none;
+}
+
+/* WebKit Thumb */
+#sensitivity-slider::-webkit-slider-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -6px;
+    border: 3px solid #0690ce;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Mozilla Track */
+#sensitivity-slider::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #0690ce;
+    border-radius: 3px;
+    border: none;
+}
+
+/* Mozilla Thumb */
+#sensitivity-slider::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 3px solid #0690ce;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Left Sidebar Content Animation */
+.left-sidebar h3,
+.left-sidebar .sidebar-links li {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.left-sidebar.active h3,
+.left-sidebar.active .sidebar-links li {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.left-sidebar.active h3 {
+    transition-delay: 0.1s;
+}
+
+.left-sidebar.active .sidebar-links li:nth-child(1) {
+    transition-delay: 0.2s;
+}
+
+.left-sidebar.active .sidebar-links li:nth-child(2) {
+    transition-delay: 0.3s;
+}
+
+.left-sidebar.active .sidebar-links li:nth-child(3) {
+    transition-delay: 0.4s;
+}
+
+/* Slash for Sidebar Header Removed */
+.sidebar-header h3 {
+    position: relative;
+    display: inline-block;
+}
+
+/* .sidebar-header h3::after removed per user request */
+
+/* ========================================= */
+/* NEW: Interactive Card Hotspot Styles     */
+/* ========================================= */
+
+.hotspot-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    pointer-events: auto;
+    font-family: sans-serif;
+    perspective: 1000px;
+
+    --theme-color: #0690ce;
+    --icon-filter: brightness(0) invert(1);
+
+    /* Prevent selection highlight */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Shift child item markers up, category headers stay at their projected position */
+.hotspot-marker.is-child {
+    transform: translate(-50%, calc(-50% - 60px));
+}
+
+/* ── Click pop animation ── */
+@keyframes hotspot-pop {
+    0% {
+        transform: translate(-50%, calc(-50% - 60px)) scale(1);
+    }
+
+    30% {
+        transform: translate(-50%, calc(-50% - 60px)) scale(1.45);
+    }
+
+    55% {
+        transform: translate(-50%, calc(-50% - 60px)) scale(1.2);
+    }
+
+    75% {
+        transform: translate(-50%, calc(-50% - 60px)) scale(1.35);
+    }
+
+    100% {
+        transform: translate(-50%, calc(-50% - 60px)) scale(1);
+    }
+}
+
+@keyframes hotspot-pop-header {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    30% {
+        transform: translate(-50%, -50%) scale(1.45);
+    }
+
+    55% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    75% {
+        transform: translate(-50%, -50%) scale(1.35);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.hotspot-marker.is-child.hotspot-pop {
+    animation: hotspot-pop 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+.hotspot-marker.hotspot-pop:not(.is-child) {
+    animation: hotspot-pop-header 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+
+
+/* 1. Icon Box (The Tab) */
+.hotspot-icon-box {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    box-sizing: border-box;
+    /* Proper box sizing */
+    border: 3px solid var(--theme-color);
+    border-radius: 4px;
+    /* Slight rounded corners but effectively square */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    position: relative;
+    z-index: 5;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    /* Contains the fill effect */
+    transition: all 0.2s ease;
+}
+
+/* Custom Icon Image */
+.custom-icon-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    filter: var(--icon-filter);
+    transition: filter 0.3s ease;
+}
+
+/* Specific centering and size fix ONLY for the main Process Chemicals flask icon (Heading) */
+.hotspot-marker .custom-icon-img[src*="Icon_Chemicals"] {
+    width: 36px;
+    height: 36px;
+}
+
+/* Specific sizing for Rock Stabilization and Extraction icons */
+.hotspot-marker .custom-icon-img[src*="Icon_RockStabalizationAndExtraction"],
+.hotspot-marker .custom-icon-img[src*="Icon_ResinCapsules"],
+.hotspot-marker .custom-icon-img[src*="Icon_Rockbolts"],
+.hotspot-marker .custom-icon-img[src*="Icon_CableBolts"],
+.hotspot-marker .custom-icon-img[src*="Icon_InjectableResins"],
+.hotspot-marker .custom-icon-img[src*="Icon_STMesh"],
+.hotspot-marker .custom-icon-img[src*="Icon_WovenMesh"],
+.hotspot-marker .custom-icon-img[src*="Icon_WeldedMesh"],
+.hotspot-marker .custom-icon-img[src*="Icon_SelfDrillingBolts"],
+.hotspot-marker .custom-icon-img[src*="Icon_ShotcreteAdmixturesChemicals"] {
+    width: 40px;
+    height: 40px;
+    margin-top: -2px !important;
+}
+
+/* Specific sizing for Drilling & Blasting child icons */
+.hotspot-marker .custom-icon-img[src*="Icon_Drilling"],
+.hotspot-marker .custom-icon-img[src*="Icon_BlastingService"],
+.hotspot-marker .custom-icon-img[src*="Icon_ExplosivesProduction"] {
+    width: 40px;
+    height: 40px;
+    margin-top: -2px !important;
+}
+
+/* Specific sizing for Drilling and Blasting category icon (Overhead) */
+.hotspot-marker .custom-icon-img[src*="Icon_Drilling&Blasting"] {
+    width: 44px;
+    height: 44px;
+    margin-top: -2px !important;
+}
+
+.hotspot-marker:hover .custom-icon-img,
+.hotspot-marker.active .custom-icon-img {
+    filter: var(--icon-filter);
+}
+
+/* The Fill Animation Element - "Filling Up" */
+.hotspot-icon-box::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    /* Changed from top:0 to bottom:0 */
+    left: 0;
+    width: 100%;
+    height: 0%;
+    /* Start empty at the bottom */
+    background-color: var(--theme-color);
+    z-index: 0;
+    /* Behind text */
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* fast fill */
+}
+
+/* SVG Icon styling */
+.hotspot-icon-box svg {
+    position: relative;
+    z-index: 1;
+    /* Above fill */
+    transition: color 0.3s ease;
+}
+
+/* Hover/Active State for Icon */
+.hotspot-marker:hover .hotspot-icon-box::before,
+.hotspot-marker.active .hotspot-icon-box::before {
+    height: 100%;
+    /* Fill to bottom */
+}
+
+.hotspot-marker:hover .hotspot-icon-box svg,
+.hotspot-marker.active .hotspot-icon-box svg {
+    color: white;
+    /* Text turns white */
+}
+
+.hotspot-marker:hover .hotspot-icon-box,
+.hotspot-marker.active .hotspot-icon-box {
+    border-color: var(--theme-color);
+}
+
+
+/* 2. Expandable Panel */
+.hotspot-expand-panel {
+    position: absolute;
+    bottom: 57px;
+    /* NEW: Sits above the icon */
+    top: auto;
+    /* Clear top */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background-color: transparent;
+    /* Transparent container for glass effect */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    /* Rounded top corners, flat bottom to connect */
+    border-radius: 12px 12px 0 0;
+
+    display: flex;
+    flex-direction: column-reverse;
+    /* NEW: Flip content order so Header is at bottom (closest to icon) ?? 
+                                       Actually client said "flip the position of the item". 
+                                       Let's try standard column but positioned above. 
+                                       If I use column-reverse, Header is at bottom. 
+                                       Let's stick to standard column for now unless "flip items" meant internal order.
+                                       Wait, "flip the position of the item in the information panel... so it fills up"
+                                       Let's keep standard flex-direction for content legibility (Header on top), 
+                                       but the panel itself is above the icon. */
+    flex-direction: column;
+
+    /* "Grow Upwards" Animation */
+    /* Start clipped from the top */
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+
+    box-shadow: 0 -15px 30px rgba(0, 0, 0, 0.3);
+    /* Shadow upwards */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 15 !important;
+    pointer-events: none;
+    /* Container is pass-through */
+}
+
+/* Interactive zone: Only individual buttons keep panel open */
+.sub-item {
+    pointer-events: auto !important;
+}
+
+/* Passthrough zones: Everything else allows panel to close/pass-through */
+.panel-header-internal,
+.panel-details,
+.panel-subicons {
+    pointer-events: none !important;
+}
+
+/* Reveal Panel on Hover/Active */
+.hotspot-marker:hover .hotspot-expand-panel,
+.hotspot-marker.active .hotspot-expand-panel {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+}
+
+/* --- NEW: Downward Opening Variation --- */
+.hotspot-marker.opens-down .hotspot-expand-panel {
+    bottom: auto;
+    top: 57px;
+    /* Place below icon */
+    border-radius: 0 0 12px 12px;
+    /* Flip corners */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    clip-path: inset(0 0 100% 0);
+    /* Start clipped from bottom */
+}
+
+.hotspot-marker.opens-down:hover .hotspot-expand-panel,
+.hotspot-marker.opens-down.active .hotspot-expand-panel {
+    clip-path: inset(0 0 0 0);
+    /* Reveal downwards */
+}
+
+/* Panel Header */
+.panel-header-internal {
+    padding: 18px 24px;
+    color: #111;
+    background-color: var(--theme-color);
+    position: relative;
+}
+
+.panel-header-internal h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    padding-right: 68px;
+}
+
+.panel-group-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: brightness(0);
+}
+
+/* Panel Details (White Area) */
+.panel-details {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.meta-row {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.desc-row {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Sub-icons Grid */
+.panel-subicons {
+    padding: 15px;
+    background-color: rgba(249, 249, 249, 0.9);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.sub-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #111;
+}
+
+.sub-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sub-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: var(--icon-filter);
+}
+
+.sub-icon svg {
+    color: var(--theme-color);
+}
+
+/* Increase sub-icon size specifically for Drilling and Blasting children in the expanded panel */
+.hotspot-marker[data-category="Drilling and Blasting Service"] .sub-icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* ========================================= */
+/* Category Color Definitions (CSS Vars)    */
+/* ========================================= */
+
+/* All categories now use the default --theme-color defined in .hotspot-marker */
+
+/* ========================================= */
+/* Mobile/Label Styles                      */
+/* ========================================= */
+
+.hotspot-label {
+    position: absolute;
+    top: 70px;
+    /* Below the 60px icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid #eee;
+
+    /* Hidden by default on Desktop */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+}
+
+/* Force label visibility for child items (User Request) */
+.hotspot-marker.is-child .hotspot-label {
+    opacity: 1;
+    pointer-events: none;
+
+    /* Attach to the icon styles - ABOVE with Gap */
+    top: auto;
+    bottom: 75px;
+
+    border: 3px solid var(--theme-color);
+    /* Full border, detached look */
+    border-radius: 8.2px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+    /* Background and Blur directly on label */
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    background-clip: border-box;
+
+    font-weight: 700;
+    min-width: 80px;
+    text-align: center;
+    padding: 8px 12px;
+
+    /* Prepare for fill animation */
+    position: absolute;
+    /* overflow: hidden; REMOVED to allow pseudo-elements to overlap border perfectly in corners */
+    transition: color 0.3s ease;
+    z-index: 9;
+}
+
+/* 2. The Fill Animation Layer (::before) - sits above parent bg */
+.hotspot-label::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    /* Slight overlap with border */
+    background-color: var(--theme-color);
+    border-radius: 4px;
+    /* Sharper than parent (8.2px) to ensure it fills corners under 3px border */
+    z-index: -1;
+    /* Behind text, in front of parent bg */
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s ease;
+}
+
+
+/* Hover State for Label */
+.hotspot-marker.is-child:hover .hotspot-label::before,
+.hotspot-marker.is-child.active .hotspot-label::before {
+    transform: scaleY(1);
+}
+
+/* ========================================= */
+/* Occlusion Styles (Behind 3D Model)       */
+/* ========================================= */
+.hotspot-marker.occluded {
+    filter: grayscale(100%) opacity(0.5);
+    z-index: 1;
+    /* Drop it behind other markers if they happen to overlap */
+}
+
+.hotspot-marker.occluded:hover {
+    filter: grayscale(0%) opacity(1);
+    /* Optionally restore color on hover so they know it's active */
+    z-index: 100;
+}
+
+/* Removed old opacity fade as background is now on parent */
+
+/* Mobile Styling */
+@media (max-width: 768px) {
+    .hotspot-label {
+        /* Hidden on mobile default as well */
+        pointer-events: none;
+    }
+
+    /* Adjust panel top position if label is there? 
+       Actually, when the panel opens, it might cover the label. 
+       Let's hide the label when the marker is ACTIVE (panel open).
+    */
+    .hotspot-marker.active .hotspot-label {
+        opacity: 0;
+    }
+}
+
+/* Clean up old override blocks as they are now handled by variables */
+.hotspot-marker[data-category] .hotspot-icon-box {
+    border-color: var(--theme-color);
+    color: var(--theme-color);
+}
+
+.hotspot-marker[data-category] .panel-header-internal {
+    background-color: var(--theme-color);
+}
+
+/* Sidebar — 3-level hierarchy */
+
+.sidebar-group {
+    margin-bottom: 24px;
+}
+
+.group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #333;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.sidebar-group-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: brightness(0) opacity(0.75);
+    flex-shrink: 0;
+}
+
+.group-categories {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-category {
+    margin-bottom: 14px;
+}
+
+.category-title {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #1a2b3c;
+    display: block;
+    margin-bottom: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    border-left: 3px solid #0690ce;
+    padding-left: 8px;
+}
+
+.category-title:hover {
+    opacity: 0.75;
+}
+
+.submenu {
+    list-style: none;
+    padding-left: 11px;
+    margin: 0;
+    border-left: 1px solid #eee;
+}
+
+.sidebar-links .submenu-item {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #444;
+    padding: 1px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 4px;
+    margin-bottom: 0;
+}
+
+.sidebar-links .submenu-item:hover {
+    color: #1a2b3c;
+    background-color: #f5f5f5;
+    padding-left: 12px;
+}
+
+.lang-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 20;
+    background-color: white;
+    border: 2px solid #333;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: auto;
+    color: #333;
+    font-family: sans-serif;
+    transition: all 0.3s ease;
+}
+
+.lang-btn:hover {
+    background-color: #333;
+    color: white;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+.loading-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    color: #333;
+    font-family: sans-serif;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ddd;
+    border-top: 5px solid #0690ce;
+    /* Theme Blue */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- NEW: Downward Opening Variations for Icon and Label --- */
+
+/* 1. Icon Fill Direction Flip */
+.hotspot-marker.opens-down .hotspot-icon-box::before {
+    bottom: auto;
+    top: 0;
+}
+
+/* 2. Child Label Position Flip (If opens-down is active, put label BELOW) */
+.hotspot-marker.opens-down.is-child .hotspot-label {
+    top: 75px;
+    bottom: auto;
+    /* Already has border/radius from default, just flipping position */
+}
+
+/* 3. Child Label Fill Flip */
+.hotspot-marker.opens-down.is-child .hotspot-label::before {
+    transform-origin: top;
+}

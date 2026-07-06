@@ -1,0 +1,57 @@
+/* Z-INDEX HIERARCHY FIX */
+/* Ensure UI elements render above hotspots */
+
+/* Hotspots should be below UI elements */
+.hotspot-marker {
+    z-index: 10 !important;
+}
+
+/* When hovering or active, bring the entire marker above others */
+.hotspot-marker:hover,
+.hotspot-marker.active {
+    z-index: 100000 !important;
+}
+
+/* Ensure icon boxes are always below panels within the same marker */
+.hotspot-marker .hotspot-icon-box {
+    z-index: 5 !important;
+    position: relative !important;
+}
+
+/* Ensure panels are always above icons within the same marker */
+.hotspot-marker .hotspot-expand-panel {
+    z-index: 20 !important;
+    position: absolute !important;
+}
+
+/* Top Navigation */
+.top-nav {
+    z-index: 1000 !important;
+}
+
+/* Left Sidebar */
+.left-sidebar {
+    z-index: 1000 !important;
+}
+
+/* Info Panel */
+#info-panel {
+    z-index: 1000 !important;
+}
+
+/* UI Container */
+.ui-container {
+    z-index: 999 !important;
+}
+
+/* Hamburger and Language buttons */
+.hamburger-btn,
+.lang-btn {
+    z-index: 1001 !important;
+}
+
+/* Home / Reset button - always on top */
+#nav-home-btn {
+    z-index: 200000 !important;
+    pointer-events: auto !important;
+}

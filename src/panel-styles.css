@@ -1,0 +1,565 @@
+/* ========================================= */
+/* INFO PANEL REDESIGN (Aura / Blue Style) */
+/* ========================================= */
+
+#info-panel {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    /* Start hidden (deep enough to hide sticking-out icon) */
+    width: 380px;
+    /* Consistent width */
+    height: 100vh;
+    background: #0690ce;
+    /* Primary Blue from Design */
+    color: white;
+    z-index: 1000;
+    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Smooth Modern Ease */
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    /* Ensure clean font if available */
+    overflow: visible;
+    /* Allow floating icon to stick out */
+    padding: 0;
+    /* Override old style.css padding */
+}
+
+#info-panel.active {
+    right: 0;
+}
+
+/* --- SCROLL VIEW CONTAINER --- */
+.panel-scroll-view {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- FLOATING ICON --- */
+.panel-floating-icon {
+    position: absolute;
+    top: 24px;
+    left: -44px;
+    /* Sticks out to the left */
+    width: 64px;
+    height: 64px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.panel-floating-icon img {
+    width: 44px;
+    /* Icon size inside box */
+    height: 44px;
+    object-fit: contain;
+    filter: brightness(0);
+}
+
+/* Specific alignment fixes for side panel icons */
+.panel-floating-icon img[src*="Icon_Chemicals"] {
+    margin-top: -10px;
+}
+
+.panel-floating-icon img[src*="GenericChemicals"] {
+    margin-top: -2px;
+    margin-left: -4px;
+}
+
+.panel-floating-icon img[src*="Icon_Drilling"],
+.panel-floating-icon img[src*="Icon_BlastingService"],
+.panel-floating-icon img[src*="Icon_ExplosivesProduction"] {
+    width: 48px;
+    height: 48px;
+    margin-top: -2px;
+}
+
+.panel-floating-icon img[src*="Icon_Drilling&Blasting"] {
+    width: 52px;
+    height: 52px;
+    margin-top: -2px;
+}
+
+/* --- HEADER --- */
+/* Simple header with title, close. Transparent background. */
+.panel-header {
+    margin-top: 24px;
+    min-height: 64px;
+    padding: 0 24px 10px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    flex-shrink: 0;
+}
+
+.panel-title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+/* Old Icon classes removed/replaced */
+
+.panel-title-text h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--panel-text, white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: var(--panel-text, white);
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+    line-height: 0.8;
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-button:hover {
+    opacity: 1;
+}
+
+/* --- CONTENT AREA --- */
+/* Scrollable area matching the blue background */
+.panel-content {
+    flex: 1;
+    /* Overflow handled by parent .panel-scroll-view */
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* --- IMAGE --- */
+.panel-image-container {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Square image */
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    /* Nice shadow lift */
+    flex-shrink: 0;
+}
+
+.panel-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.panel-image.loaded {
+    opacity: 1;
+}
+
+.panel-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- SECTIONS --- */
+.panel-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--panel-text, white);
+}
+
+.panel-section p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--panel-text, rgba(255, 255, 255, 0.95));
+    font-weight: 400;
+    white-space: pre-line;
+    /* Preserves newlines from CSV */
+}
+
+/* --- CONTACT & BOTTOM SECTION --- */
+.panel-bottom-section {
+    margin-top: auto;
+    /* Pushes to bottom */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-info p {
+    margin: 8px 0;
+    font-size: 15px;
+    line-height: 1.4;
+    color: var(--panel-text, white);
+}
+
+.contact-info strong {
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+/* --- ACTION BUTTON --- */
+.action-button {
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    text-align: center;
+    text-transform: capitalize;
+    /* "Find Out More" */
+    display: block;
+}
+
+/* Primary Button: White with Dark Text */
+.action-button.primary {
+    background: white;
+    color: #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-button.primary:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* --- SCROLLBAR --- */
+#info-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+#info-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#info-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+#info-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* --- ENTRANCE ANIMATIONS --- */
+@keyframes slideInUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reset opacity for children when active to allow animation */
+#info-panel.active .panel-image-container,
+#info-panel.active .panel-section,
+#info-panel.active .panel-bottom-section {
+    opacity: 0;
+}
+
+/* Apply animations with stagger */
+#info-panel.active .panel-image-container {
+    animation: slideInUpFade 0.5s ease-out 0.1s forwards;
+}
+
+#info-panel.active .panel-section {
+    animation: slideInUpFade 0.5s ease-out 0.2s forwards;
+}
+
+#info-panel.active .panel-bottom-section {
+    animation: slideInUpFade 0.5s ease-out 0.3s forwards;
+}
+
+
+/* ========================================= */
+/* INSTRUCTIONS DIALOG (Top Left)            */
+/* ========================================= */
+
+.instructions-dialog {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1050;
+    width: 240px;
+    background: rgba(10, 25, 47, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(6, 144, 206, 0.3);
+    border-radius: 14px;
+    padding: 18px 20px 16px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    font-family: 'Inter', sans-serif;
+    color: #e8f4fb;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform-origin: bottom left;
+}
+
+.instructions-dialog.hidden {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+    pointer-events: none;
+}
+
+/* --- Header Row --- */
+.instructions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+}
+
+.instructions-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.instructions-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0 2px 0;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.instructions-close-btn:hover {
+    color: #ffffff;
+}
+
+/* --- Divider --- */
+.instructions-divider {
+    border: none;
+    border-top: 1px solid rgba(6, 144, 206, 0.3);
+    margin: 12px 0;
+}
+
+/* --- Tips List --- */
+.instructions-list {
+    list-style: none;
+    margin: 0 0 16px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.instructions-list li {
+    font-size: 13px;
+    color: rgba(232, 244, 251, 0.85);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.instructions-list li::before {
+    content: '\2022';
+    color: #0690ce;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.instructions-key {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* --- Reset Button --- */
+.instructions-reset-btn {
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1.5px solid rgba(6, 144, 206, 0.6);
+    border-radius: 8px;
+    color: #e8f4fb;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.instructions-reset-btn:hover {
+    background: rgba(6, 144, 206, 0.25);
+    border-color: #0690ce;
+    color: #ffffff;
+}
+
+/* --- Toggle Button (shown when dialog is hidden) --- */
+.instructions-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1051;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #0690ce;
+    color: #0690ce;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(6, 144, 206, 0.2);
+    transition: background 0.2s, color 0.2s;
+}
+
+.instructions-toggle-btn:hover {
+    background: #0690ce;
+    color: white;
+}
+
+.instructions-toggle-btn.visible {
+    display: flex;
+}
+
+/* ========================================= */
+/* NAV CATEGORY BAR (column: badge row + home row) */
+/* ========================================= */
+
+.nav-category-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    /* Fixed-center in the navbar */
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200000;
+    pointer-events: auto;
+}
+
+/* Row 1: arrows + badge */
+.nav-category-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Row 2: home button centered below */
+.nav-home-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Arrow buttons */
+.nav-cat-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--theme-color, #0690ce);
+    background: white;
+    color: var(--theme-color, #0690ce);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+
+.nav-cat-arrow:hover {
+    background: var(--theme-color, #0690ce);
+    color: white;
+}
+
+/* The badge pill */
+.nav-category-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 18px 6px 12px;
+    background: white;
+    border: 2px solid var(--theme-color, #0690ce);
+    border-radius: 50px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+}
+
+.nav-category-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    filter: invert(40%) sepia(90%) saturate(500%) hue-rotate(170deg) brightness(95%);
+    flex-shrink: 0;
+    transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+/* Specific centering and size fix for Process Chemicals icon in navbar */
+.nav-category-row[data-category="Process Chemicals"] .nav-category-icon {
+    width: 34px;
+    height: 34px;
+    transform: translateY(-2px);
+}
+
+.nav-category-row[data-category="Drilling and Blasting Service"] .nav-category-icon {
+    width: 38px;
+    height: 38px;
+    transform: translateY(-1px);
+}
+
+.nav-category-name {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #333 !important;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
