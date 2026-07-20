@@ -1,0 +1,174 @@
+<!--
+  MEKHLOPAT — 3D Explorer товч + Modal
+  WordPress-ийн Custom HTML block руу энэ бүхлээр нь paste хийнэ.
+  Товч дээр дарахад modal нээгдэж 3D iframe гарна.
+-->
+
+<div class="m3d-section">
+  <button class="m3d-cta" type="button" onclick="m3dOpen()">
+    <span class="m3d-play">▶</span> 3D-гээр үзэх
+  </button>
+</div>
+
+<div id="m3d-modal" class="m3d-modal" aria-hidden="true" role="dialog" aria-label="3D Explorer">
+  <div class="m3d-frame">
+    <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
+    <div class="m3d-loading" id="m3d-loading">Ачаалж байна…</div>
+    <iframe id="m3d-iframe" class="m3d-iframe" src="" allow="fullscreen"
+            allowfullscreen loading="lazy" title="Namir 3D Explorer"></iframe>
+  </div>
+</div>
+
+<style>
+  .m3d-section {
+    display: flex; justify-content: center;
+    margin: 40px auto; padding: 0 20px;
+  }
+
+  .m3d-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px; background: #0690ce; color: #fff;
+    border: 0; border-radius: 10px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 4px 14px rgba(6,144,206,0.4);
+  }
+  .m3d-cta:hover {
+    background: #0578ac; transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(6,144,206,0.5);
+  }
+  .m3d-cta:active { transform: translateY(0); }
+  .m3d-play { font-size: 12px; }
+
+  .m3d-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 2147483647;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+  .m3d-modal.open { display: flex; }
+
+  .m3d-frame {
+    position: relative;
+    width: 100%; height: 100%;
+    max-width: 1400px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #0B2A3A;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .m3d-iframe {
+    width: 100%; height: 100%; border: 0; display: block;
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .m3d-iframe.ready { opacity: 1; }
+
+  .m3d-close {
+    position: absolute; top: 12px; right: 12px;
+    z-index: 10;
+    width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: rgba(255,255,255,0.95); color: #333;
+    font-size: 28px; line-height: 1; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
+    pointer-events: auto;
+  }
+  .m3d-close:hover { background: #fff; transform: scale(1.08); }
+
+  .m3d-loading {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff; font-size: 15px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 1;
+  }
+  .m3d-loading::before {
+    content: ''; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #0690ce; border-radius: 50%;
+    animation: m3d-spin 0.8s linear infinite;
+  }
+  @keyframes m3d-spin { to { transform: rotate(360deg); } }
+
+  /* Tablet (портрет ба ландшафт) */
+  @media (max-width: 1024px) {
+    .m3d-modal { padding: 20px; }
+    .m3d-frame { border-radius: 10px; max-width: none; }
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .m3d-section { margin: 24px auto; padding: 0 16px; }
+    .m3d-modal { padding: 0; }
+    .m3d-frame { border-radius: 0; box-shadow: none; }
+    .m3d-cta {
+      padding: 14px 22px; font-size: 15px;
+      width: 100%; max-width: 320px; justify-content: center;
+    }
+    .m3d-close {
+      top: 10px; right: 10px;
+      width: 42px; height: 42px; font-size: 26px;
+    }
+    .m3d-loading { font-size: 14px; }
+  }
+
+  /* Mobile landscape / жижиг өндөр */
+  @media (max-width: 900px) and (orientation: landscape) {
+    .m3d-modal { padding: 0; }
+    .m3d-frame { border-radius: 0; }
+  }
+
+  /* iOS Safari дээр URL bar өөрчлөгддөгийг зохицуулах */
+  @supports (height: 100dvh) {
+    .m3d-modal { height: 100dvh; }
+  }
+</style>
+
+<script>
+  (function () {
+    var URL_3D = 'https://namir-3d-explorer.vercel.app/';
+    var modal = document.getElementById('m3d-modal');
+    var iframe = document.getElementById('m3d-iframe');
+    var loading = document.getElementById('m3d-loading');
+
+    // Modal-ыг document.body руу нүүлгэж WordPress theme-ийн
+    // stacking context-оос гарна (nav modal дээр гарахаас сэргийлнэ)
+    if (modal.parentNode !== document.body) {
+      document.body.appendChild(modal);
+    }
+
+    window.m3dOpen = function () {
+      iframe.src = URL_3D;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      loading.style.display = 'flex';
+      iframe.addEventListener('load', function onLoad() {
+        iframe.classList.add('ready');
+        loading.style.display = 'none';
+        iframe.removeEventListener('load', onLoad);
+      });
+    };
+
+    window.m3dClose = function () {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      iframe.classList.remove('ready');
+      iframe.src = '';
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('open')) window.m3dClose();
+    });
+
+    // Backdrop дээр дарахад хаагдана (iframe дээр дарахад биш)
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) window.m3dClose();
+    });
+  })();
+</script>
