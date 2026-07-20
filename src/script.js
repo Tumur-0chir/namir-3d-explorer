@@ -1110,8 +1110,8 @@ function hideCategoryBadge() {
 function restoreInstructions() {
     const dialog = document.getElementById('instructions-dialog');
     const toggleBtn = document.getElementById('instructions-toggle');
-    if (dialog) dialog.classList.remove('hidden');
-    if (toggleBtn) toggleBtn.classList.remove('visible');
+    if (dialog) dialog.classList.add('hidden');
+    if (toggleBtn) toggleBtn.classList.add('visible');
 }
 
 function showNavCategoryBar(data) {
@@ -1403,7 +1403,7 @@ if (navHomeBtn) {
 }
 
 function initBrandLogo() {
-    const logoEl = document.querySelector('.top-nav .logo');
+    const logoEl = document.querySelector('.sidebar-logo');
     if (!logoEl) return;
     const brand = new URLSearchParams(window.location.search).get('brand') || 'mekhlopat';
     if (brand === 'kemex') {
@@ -1419,11 +1419,13 @@ function setSidebarOverlayHidden(hidden) {
     const navHome = document.getElementById('nav-home-btn');
     const instrDialog = document.getElementById('instructions-dialog');
     const instrToggle = document.getElementById('instructions-toggle');
+    const burger = document.getElementById('hamburger-btn');
     const vis = hidden ? 'hidden' : '';
     if (navBar) navBar.style.visibility = vis;
     if (navHome) navHome.style.visibility = vis;
     if (instrDialog) instrDialog.style.visibility = vis;
     if (instrToggle) instrToggle.style.visibility = vis;
+    if (burger) burger.style.visibility = vis;
 }
 
 if (hamburgerBtn && leftSidebar) {

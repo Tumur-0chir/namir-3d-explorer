@@ -28,7 +28,7 @@
     <!-- ============================================== -->
     <!-- INSTRUCTIONS DIALOG (Top Left)                 -->
     <!-- ============================================== -->
-    <div id="instructions-dialog" class="instructions-dialog">
+    <div id="instructions-dialog" class="instructions-dialog hidden">
         <div class="instructions-header">
             <span class="instructions-title">HOW TO NAVIGATE</span>
             <button id="instructions-close" class="instructions-close-btn" title="Close">&times;</button>
@@ -48,13 +48,10 @@
     </div>
 
     <!-- Toggle button to reopen instructions -->
-    <button id="instructions-toggle" class="instructions-toggle-btn" title="How to Navigate">?</button>
+    <button id="instructions-toggle" class="instructions-toggle-btn visible" title="How to Navigate">?</button>
 
     <div class="ui-container">
         <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
-        <div class="top-nav">
-            <img src="/images/logos/Namir_Mekhlopat_logo_03.webp" alt="Mekhlopat Logo" class="logo">
-        </div>
 
         <!-- Always-visible centered nav bar -->
         <div id="nav-category-bar" class="nav-category-bar">
@@ -79,7 +76,7 @@
         <!-- Left Sidebar Menu -->
         <div id="left-sidebar" class="left-sidebar">
             <div class="sidebar-header">
-                <h3>Menu</h3>
+                <img src="/images/logos/Namir_Mekhlopat_logo_03.webp" alt="Mekhlopat Logo" class="sidebar-logo">
                 <button id="close-left-sidebar" class="close-button">&times;</button>
             </div>
             <ul class="sidebar-links"></ul>
