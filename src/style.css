@@ -8,6 +8,17 @@ body {
     overflow: hidden;
 }
 
+/* Iframe embed: inherit parent page background */
+html.embedded,
+html.embedded body {
+    background: transparent !important;
+}
+
+html.embedded .background-gradient,
+html.embedded .vignette {
+    display: none;
+}
+
 /* Make this the very bottom layer */
 .vignette {
     position: fixed;
