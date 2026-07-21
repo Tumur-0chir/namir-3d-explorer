@@ -1,0 +1,262 @@
+<!--
+  MEKHLOPAT — Hero section: зүүн талд компанийн танилцуулга,
+  баруун талд амьд 3D preview + fullscreen товч
+  WordPress-ийн Custom HTML block руу энэ бүхлээр нь paste хийнэ.
+-->
+
+<section class="m3d-hero">
+  <div class="m3d-hero-inner">
+    <div class="m3d-hero-left">
+      <h1 class="m3d-hero-title">Mekhlopat LLC</h1>
+      <p class="m3d-hero-tag">
+        Mining solutions for open-pit and underground operations
+      </p>
+      <button class="m3d-cta" type="button" onclick="m3dOpen()">
+        <span class="m3d-play">▶</span> Explore in 3D
+      </button>
+    </div>
+
+    <div class="m3d-hero-right">
+      <div class="m3d-preview">
+        <span class="m3d-live-badge">LIVE 3D MODEL</span>
+        <button class="m3d-fs-btn" type="button" onclick="m3dOpen()" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
+          </svg>
+        </button>
+        <iframe class="m3d-preview-iframe" src="https://namir-3d-explorer.vercel.app/"
+                title="Namir 3D Explorer (preview)"
+                loading="lazy" allow="fullscreen"></iframe>
+        <div class="m3d-hints">
+          <span>🖱 Drag to rotate</span>
+          <span>🔍 Scroll to zoom</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="m3d-modal" class="m3d-modal" aria-hidden="true" role="dialog" aria-label="3D Explorer">
+  <div class="m3d-frame">
+    <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
+    <div class="m3d-loading" id="m3d-loading">Ачаалж байна…</div>
+    <iframe id="m3d-iframe" class="m3d-iframe" src="" allow="fullscreen"
+            allowfullscreen loading="lazy" title="Namir 3D Explorer"></iframe>
+  </div>
+</div>
+
+<style>
+  /* ========== Hero section ========== */
+  .m3d-hero {
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #0B2A3A 0%, #134B63 100%);
+  }
+  .m3d-hero-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; align-items: center;
+  }
+
+  /* --- Left column --- */
+  .m3d-hero-left { color: #fff; }
+  .m3d-hero-title {
+    font-size: 44px; font-weight: 800; margin: 0 0 16px;
+    line-height: 1.1; letter-spacing: -0.5px;
+    color: #ff6900;
+  }
+  .m3d-hero-tag {
+    font-size: 18px; line-height: 1.5;
+    opacity: 0.9; margin: 0 0 28px; max-width: 460px;
+  }
+
+  .m3d-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px; background: #0690ce; color: #fff;
+    border: 0; border-radius: 10px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 4px 14px rgba(6,144,206,0.5);
+  }
+  .m3d-cta:hover {
+    background: #0578ac; transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(6,144,206,0.6);
+  }
+  .m3d-cta:active { transform: translateY(0); }
+  .m3d-play { font-size: 12px; }
+
+  /* --- Right column --- */
+  .m3d-preview {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px; overflow: hidden;
+    background: #0B2A3A;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .m3d-preview-iframe {
+    width: 100%; height: 100%; border: 0; display: block;
+  }
+
+  .m3d-live-badge {
+    position: absolute; top: 14px; left: 14px; z-index: 3;
+    padding: 6px 12px;
+    background: rgba(220,38,38,0.95); color: #fff;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .m3d-live-badge::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: #fff;
+    animation: m3d-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes m3d-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .m3d-fs-btn {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    width: 40px; height: 40px; border: 0; border-radius: 8px;
+    background: rgba(0,0,0,0.6); color: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .m3d-fs-btn:hover { background: rgba(6,144,206,0.9); transform: scale(1.06); }
+
+  .m3d-hints {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+    padding: 12px 16px;
+    background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+    color: #fff; font-size: 13px;
+    display: flex; gap: 16px;
+    pointer-events: none;
+  }
+
+  /* ========== Modal (fullscreen) ========== */
+  .m3d-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 2147483647;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+  .m3d-modal.open { display: flex; }
+
+  .m3d-frame {
+    position: relative;
+    width: 100%; height: 100%;
+    max-width: 1400px;
+    border-radius: 12px; overflow: hidden;
+    background: #0B2A3A;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .m3d-iframe {
+    width: 100%; height: 100%; border: 0; display: block;
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .m3d-iframe.ready { opacity: 1; }
+
+  .m3d-close {
+    position: absolute; top: 12px; right: 12px; z-index: 10;
+    width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: rgba(255,255,255,0.95); color: #333;
+    font-size: 28px; line-height: 1; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
+    pointer-events: auto;
+  }
+  .m3d-close:hover { background: #fff; transform: scale(1.08); }
+
+  .m3d-loading {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff; font-size: 15px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 1;
+  }
+  .m3d-loading::before {
+    content: ''; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #0690ce; border-radius: 50%;
+    animation: m3d-spin 0.8s linear infinite;
+  }
+  @keyframes m3d-spin { to { transform: rotate(360deg); } }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 1024px) {
+    .m3d-hero-inner { grid-template-columns: 1fr; gap: 30px; }
+    .m3d-hero-title { font-size: 36px; }
+    .m3d-hero-tag { font-size: 16px; }
+    .m3d-preview { aspect-ratio: 16 / 10; }
+    .m3d-modal { padding: 20px; }
+    .m3d-frame { max-width: none; border-radius: 10px; }
+  }
+
+  @media (max-width: 640px) {
+    .m3d-hero { padding: 40px 16px; }
+    .m3d-hero-title { font-size: 28px; }
+    .m3d-hero-tag { font-size: 15px; margin-bottom: 22px; }
+    .m3d-cta {
+      padding: 14px 24px; font-size: 15px;
+      width: 100%; max-width: 320px; justify-content: center;
+    }
+    .m3d-preview { aspect-ratio: 4 / 3; border-radius: 10px; }
+    .m3d-live-badge { font-size: 10px; padding: 5px 10px; }
+    .m3d-fs-btn { width: 36px; height: 36px; }
+    .m3d-hints { font-size: 12px; padding: 10px 12px; }
+    .m3d-modal { padding: 0; }
+    .m3d-frame { border-radius: 0; box-shadow: none; }
+    .m3d-close { top: 10px; right: 10px; width: 42px; height: 42px; font-size: 26px; }
+  }
+
+  @supports (height: 100dvh) {
+    .m3d-modal { height: 100dvh; }
+  }
+</style>
+
+<script>
+  (function () {
+    var URL_3D = 'https://namir-3d-explorer.vercel.app/';
+    var modal = document.getElementById('m3d-modal');
+    var iframe = document.getElementById('m3d-iframe');
+    var loading = document.getElementById('m3d-loading');
+
+    if (modal.parentNode !== document.body) {
+      document.body.appendChild(modal);
+    }
+
+    window.m3dOpen = function () {
+      iframe.src = URL_3D;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      loading.style.display = 'flex';
+      iframe.addEventListener('load', function onLoad() {
+        iframe.classList.add('ready');
+        loading.style.display = 'none';
+        iframe.removeEventListener('load', onLoad);
+      });
+    };
+
+    window.m3dClose = function () {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      iframe.classList.remove('ready');
+      iframe.src = '';
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('open')) window.m3dClose();
+    });
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) window.m3dClose();
+    });
+  })();
+</script>
