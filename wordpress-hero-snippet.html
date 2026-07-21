@@ -3,15 +3,16 @@
   баруун талд амьд 3D preview + fullscreen товч
   WordPress-ийн Custom HTML block руу энэ бүхлээр нь paste хийнэ.
 
-  Гол зарчим:
-  - Preview элемент нь init үед document.body руу нүүнэ (WordPress theme-ийн
-    stacking context / transform-оос гардаг). Iframe.src хараахан
-    тохируулаагүй тул reload хийхгүй.
-  - Slot нь hero дотор орон зайг хадгалж, JS нь preview-г slot дээр
-    absolute байрлуулна.
-  - Scroll хийж slot харагдах үед л iframe.src тохируулж НЭГ УДАА ачаална.
-  - Fullscreen нээхэд preview-д CSS class нэмэгдэж inset: 40px болно.
-    Iframe DOM дотор хөдлөхгүй тул дахин ачаалахгүй, state үлдэнэ.
+  Popover API ашигласан (browser native top-layer):
+  - Preview slot дотор энгийн position:absolute-аар байрлана
+  - Fullscreen нээхэд `popover="auto"` attribute нэмж showPopover() дуудна
+    — element top-layer руу шилжинэ, ямар ч stacking context-с гарна
+  - Iframe DOM дотор ХӨДЛӨХГҮЙ — reload хийхгүй, state үлдэнэ
+  - Escape / outside click auto-close (light-dismiss)
+  - ::backdrop pseudo-element нь харанхуй давхарга
+
+  Browser support: Chrome 114+ / Safari 17+ / Firefox 125+ (2024-оос хойш)
+  Хуучин browser-т fallback байхгүй — 3D зөвхөн preview-т харагдана.
 -->
 
 <section class="m3d-hero">
@@ -27,35 +28,32 @@
     </div>
 
     <div class="m3d-hero-right">
-      <div class="m3d-slot" id="m3d-slot"></div>
+      <div class="m3d-slot">
+        <div class="m3d-preview" id="m3d-preview">
+          <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
+          <span class="m3d-live-badge">LIVE 3D MODEL</span>
+          <button class="m3d-fs-btn" type="button" onclick="m3dOpen()" aria-label="Fullscreen">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
+            </svg>
+          </button>
+          <iframe class="m3d-iframe" id="m3d-iframe"
+                  data-src="https://namir-3d-explorer.vercel.app/"
+                  title="Namir 3D Explorer"
+                  loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+          <div class="m3d-placeholder" id="m3d-placeholder">
+            <div class="m3d-spinner"></div>
+            <span>3D загварыг ачаалж байна…</span>
+          </div>
+          <div class="m3d-hints">
+            <span>🖱 Drag to rotate</span>
+            <span>🔍 Scroll to zoom</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
-
-<!-- Preview + backdrop + close — JS-ээр document.body руу нүүлгэнэ -->
-<div class="m3d-preview" id="m3d-preview">
-  <span class="m3d-live-badge" id="m3d-live-badge">LIVE 3D MODEL</span>
-  <button class="m3d-fs-btn" id="m3d-fs-btn" type="button"
-          onclick="m3dOpen()" aria-label="Fullscreen">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-      <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
-    </svg>
-  </button>
-  <iframe class="m3d-iframe" id="m3d-iframe"
-          data-src="https://namir-3d-explorer.vercel.app/"
-          title="Namir 3D Explorer"
-          loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-  <div class="m3d-placeholder" id="m3d-placeholder">
-    <div class="m3d-spinner"></div>
-    <span>3D загварыг ачаалж байна…</span>
-  </div>
-  <div class="m3d-hints" id="m3d-hints">
-    <span>🖱 Drag to rotate</span>
-    <span>🔍 Scroll to zoom</span>
-  </div>
-</div>
-<div id="m3d-backdrop" class="m3d-backdrop" aria-hidden="true"></div>
-<button id="m3d-close" class="m3d-close" type="button" aria-label="Хаах">&times;</button>
 
 <style>
   /* ========== Hero section ========== */
@@ -96,26 +94,56 @@
   .m3d-cta:active { transform: translateY(0); }
   .m3d-play { font-size: 12px; }
 
-  /* Slot: hero дотор preview-ийн орон зайг хадгалдаг хоосон box */
+  /* Slot: hero дотор preview-ийн орон зайг тодорхойлно */
   .m3d-slot {
+    position: relative;
     aspect-ratio: 4 / 3;
     width: 100%;
   }
 
-  /* ========== Preview — body-appended, JS-ээр байрлана ========== */
+  /* ========== Preview — inline slot дотор ========== */
   .m3d-preview {
-    position: fixed;
-    /* top/left/width/height — JS-ээр slot-той тааруулна */
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
     border-radius: 14px; overflow: hidden;
     background: #0B2A3A;
     box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    z-index: 999999;
     box-sizing: border-box;
-    visibility: hidden;  /* JS syncToSlot дуудагдтал */
+    /* Popover-т ашиглагдах default styling reset */
+    margin: 0; padding: 0; border: 0;
   }
-  .m3d-preview.ready { visibility: visible; }
-  .m3d-preview.fullscreen { transition: top .35s ease, left .35s ease, right .35s ease, bottom .35s ease, border-radius .35s ease; }
 
+  /* ========== Popover (fullscreen) mode ========== */
+  .m3d-preview[popover] {
+    /* Top-layer-т render хийгдэнэ — z-index / stacking context үл хамаарна.
+       position: fixed зайлшгүй — эс тэгвэл .m3d-preview base rule-ын
+       position: absolute нь slot-т багтчихдаг. */
+    position: fixed !important;
+    inset: 40px;
+    width: auto; height: auto;
+    max-width: 1400px; max-height: none;
+    margin: auto;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* Backdrop (харанхуй давхарга) — popover open үед л харагдана */
+  .m3d-preview::backdrop {
+    background: rgba(0,0,0,0.92);
+  }
+
+  /* Fullscreen үед badge/hints/fs-btn нуугдана, close товч гарна */
+  .m3d-preview[popover] .m3d-live-badge,
+  .m3d-preview[popover] .m3d-fs-btn,
+  .m3d-preview[popover] .m3d-hints {
+    display: none;
+  }
+  .m3d-preview[popover] .m3d-close {
+    display: flex;
+  }
+
+  /* ========== Iframe ========== */
   .m3d-iframe {
     width: 100%; height: 100%; border: 0; display: block;
     opacity: 0; transition: opacity .4s ease;
@@ -138,7 +166,9 @@
     border-radius: 50%;
     animation: m3d-spin 0.9s linear infinite;
   }
+  @keyframes m3d-spin { to { transform: rotate(360deg); } }
 
+  /* ========== Overlays (badge, buttons, hints) ========== */
   .m3d-live-badge {
     position: absolute; top: 14px; left: 14px; z-index: 3;
     padding: 6px 12px;
@@ -146,7 +176,6 @@
     font-size: 11px; font-weight: 700; letter-spacing: 1px;
     border-radius: 4px;
     display: inline-flex; align-items: center; gap: 6px;
-    transition: opacity .3s;
   }
   .m3d-live-badge::before {
     content: ''; width: 8px; height: 8px; border-radius: 50%;
@@ -162,12 +191,24 @@
     position: absolute; top: 12px; right: 12px; z-index: 3;
     width: 40px; height: 40px; border: 0; border-radius: 8px;
     background: rgba(0,0,0,0.6); color: #fff;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: background .2s, transform .2s, opacity .3s;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
   .m3d-fs-btn:hover { background: rgba(6,144,206,0.9); transform: scale(1.06); }
+
+  .m3d-close {
+    position: absolute; top: 12px; right: 12px; z-index: 10;
+    width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: rgba(255,255,255,0.95); color: #333;
+    font-size: 28px; line-height: 1; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    display: none; align-items: center; justify-content: center;
+    transition: background .2s, transform .2s;
+  }
+  .m3d-close:hover { background: #fff; transform: scale(1.08); }
 
   .m3d-hints {
     position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
@@ -176,50 +217,7 @@
     color: #fff; font-size: 13px;
     display: flex; gap: 16px;
     pointer-events: none;
-    transition: opacity .3s;
   }
-
-  /* ========== Fullscreen mode ========== */
-  .m3d-preview.fullscreen {
-    position: fixed;
-    top: 40px !important; left: 40px !important;
-    right: 40px !important; bottom: 40px !important;
-    width: auto !important; height: auto !important;
-    max-width: 1400px;
-    margin: 0 auto;
-    border-radius: 12px;
-    z-index: 2147483647;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  }
-  .m3d-preview.fullscreen .m3d-live-badge,
-  .m3d-preview.fullscreen .m3d-fs-btn,
-  .m3d-preview.fullscreen .m3d-hints {
-    opacity: 0; pointer-events: none;
-  }
-
-  .m3d-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 2147483646;
-    opacity: 0; visibility: hidden;
-    transition: opacity .3s ease, visibility .3s;
-  }
-  .m3d-backdrop.open { opacity: 1; visibility: visible; }
-
-  .m3d-close {
-    position: fixed; top: 12px; right: 12px;
-    z-index: 2147483647;
-    width: 44px; height: 44px; border: 0; border-radius: 50%;
-    background: rgba(255,255,255,0.95); color: #333;
-    font-size: 28px; line-height: 1; cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    display: none; align-items: center; justify-content: center;
-    transition: background .2s, transform .2s;
-  }
-  .m3d-close.open { display: flex; }
-  .m3d-close:hover { background: #fff; transform: scale(1.08); }
-
-  @keyframes m3d-spin { to { transform: rotate(360deg); } }
 
   /* ========== Responsive ========== */
   @media (max-width: 1024px) {
@@ -227,9 +225,8 @@
     .m3d-hero-title { font-size: 36px; }
     .m3d-hero-tag { font-size: 16px; }
     .m3d-slot { aspect-ratio: 16 / 10; }
-    .m3d-preview.fullscreen {
-      top: 20px !important; left: 20px !important;
-      right: 20px !important; bottom: 20px !important;
+    .m3d-preview[popover] {
+      inset: 20px;
       border-radius: 10px;
     }
   }
@@ -247,10 +244,10 @@
     .m3d-live-badge { font-size: 10px; padding: 5px 10px; }
     .m3d-fs-btn { width: 36px; height: 36px; }
     .m3d-hints { font-size: 12px; padding: 10px 12px; }
-    .m3d-preview.fullscreen {
-      top: 0 !important; left: 0 !important;
-      right: 0 !important; bottom: 0 !important;
-      border-radius: 0; box-shadow: none;
+    .m3d-preview[popover] {
+      inset: 0;
+      border-radius: 0;
+      box-shadow: none;
     }
     .m3d-close { top: 10px; right: 10px; width: 42px; height: 42px; font-size: 26px; }
   }
@@ -258,21 +255,13 @@
 
 <script>
   (function () {
-    var slot = document.getElementById('m3d-slot');
     var preview = document.getElementById('m3d-preview');
     var iframe = document.getElementById('m3d-iframe');
     var placeholder = document.getElementById('m3d-placeholder');
-    var backdrop = document.getElementById('m3d-backdrop');
-    var closeBtn = document.getElementById('m3d-close');
-
-    // Preview, backdrop, close-г document.body руу нүүлгэнэ.
-    // Iframe.src хараахан тохируулаагүй тул reload гарахгүй.
-    // WordPress theme-ийн ямар ч stacking context / transform-оос гарна.
-    document.body.appendChild(preview);
-    document.body.appendChild(backdrop);
-    document.body.appendChild(closeBtn);
-
     var isLoaded = false;
+
+    // Popover API-ийн дэмжлэгийг шалгах
+    var supportsPopover = typeof preview.showPopover === 'function';
 
     // Iframe-г ЗӨВХӨН НЭГ УДАА ачаална
     function loadIframe() {
@@ -286,43 +275,6 @@
       });
     }
 
-    // Preview-г slot байрлалд тааруулна (position: fixed — viewport rect)
-    var syncPending = false;
-    function syncToSlot() {
-      if (preview.classList.contains('fullscreen')) return;
-      var rect = slot.getBoundingClientRect();
-      if (rect.width < 1 || rect.height < 1) return;
-      preview.style.top = rect.top + 'px';
-      preview.style.left = rect.left + 'px';
-      preview.style.width = rect.width + 'px';
-      preview.style.height = rect.height + 'px';
-      // 1-р удаа dimension тохирсны дараа харагдуулна
-      if (!preview.classList.contains('ready')) preview.classList.add('ready');
-    }
-    function scheduleSync() {
-      if (syncPending) return;
-      syncPending = true;
-      requestAnimationFrame(function () {
-        syncPending = false;
-        syncToSlot();
-      });
-    }
-
-    // Эхний sync — layout бэлэн болтол хэд дахин
-    syncToSlot();
-    requestAnimationFrame(syncToSlot);
-    setTimeout(syncToSlot, 100);
-    setTimeout(syncToSlot, 500);
-
-    window.addEventListener('scroll', scheduleSync, { passive: true });
-    window.addEventListener('resize', scheduleSync);
-    window.addEventListener('load', syncToSlot);
-    if ('ResizeObserver' in window) {
-      var ro = new ResizeObserver(scheduleSync);
-      ro.observe(document.body);
-      ro.observe(slot);
-    }
-
     // Scroll хийж slot харагдах үед iframe ачаална
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
@@ -333,38 +285,37 @@
           }
         });
       }, { rootMargin: '200px 0px' });
-      io.observe(slot);
+      io.observe(preview);
     } else {
       loadIframe();
     }
 
     window.m3dOpen = function () {
       loadIframe();
-      preview.classList.add('fullscreen');
-      backdrop.classList.add('open');
-      closeBtn.classList.add('open');
-      backdrop.setAttribute('aria-hidden', 'false');
+      if (!supportsPopover) {
+        alert('Хөтчийг шинэчилнэ үү (Chrome 114+, Safari 17+, Firefox 125+)');
+        return;
+      }
+      preview.setAttribute('popover', 'auto');
+      preview.showPopover();
       document.body.style.overflow = 'hidden';
     };
 
     window.m3dClose = function () {
-      preview.classList.remove('fullscreen');
-      backdrop.classList.remove('open');
-      closeBtn.classList.remove('open');
-      backdrop.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      // Fullscreen-ээс гарсны дараа slot байрлалд эргэж очих
-      syncToSlot();
-      requestAnimationFrame(syncToSlot);
+      if (supportsPopover && preview.matches(':popover-open')) {
+        preview.hidePopover();
+        // Cleanup toggle event-т хийгдэнэ
+      }
     };
 
-    closeBtn.addEventListener('click', window.m3dClose);
-    backdrop.addEventListener('click', window.m3dClose);
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && preview.classList.contains('fullscreen')) {
-        window.m3dClose();
-      }
-    });
+    // Toggle event нь бүх close төрөл (button, ESC, outside click)-т ажиллана
+    if (supportsPopover) {
+      preview.addEventListener('toggle', function (e) {
+        if (e.newState === 'closed') {
+          preview.removeAttribute('popover');
+          document.body.style.overflow = '';
+        }
+      });
+    }
   })();
 </script>
