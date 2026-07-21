@@ -2,6 +2,16 @@
   MEKHLOPAT — Hero section: зүүн талд компанийн танилцуулга,
   баруун талд амьд 3D preview + fullscreen товч
   WordPress-ийн Custom HTML block руу энэ бүхлээр нь paste хийнэ.
+
+  Гол зарчим:
+  - Preview элемент нь init үед document.body руу нүүнэ (WordPress theme-ийн
+    stacking context / transform-оос гардаг). Iframe.src хараахан
+    тохируулаагүй тул reload хийхгүй.
+  - Slot нь hero дотор орон зайг хадгалж, JS нь preview-г slot дээр
+    absolute байрлуулна.
+  - Scroll хийж slot харагдах үед л iframe.src тохируулж НЭГ УДАА ачаална.
+  - Fullscreen нээхэд preview-д CSS class нэмэгдэж inset: 40px болно.
+    Iframe DOM дотор хөдлөхгүй тул дахин ачаалахгүй, state үлдэнэ.
 -->
 
 <section class="m3d-hero">
@@ -17,38 +27,35 @@
     </div>
 
     <div class="m3d-hero-right">
-      <div class="m3d-preview">
-        <span class="m3d-live-badge">LIVE 3D MODEL</span>
-        <button class="m3d-fs-btn" type="button" onclick="m3dOpen()" aria-label="Fullscreen">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
-          </svg>
-        </button>
-        <iframe class="m3d-preview-iframe" id="m3d-preview-iframe"
-                data-src="https://namir-3d-explorer.vercel.app/"
-                title="Namir 3D Explorer (preview)"
-                loading="lazy" allow="fullscreen"></iframe>
-        <div class="m3d-preview-placeholder" id="m3d-preview-placeholder">
-          <div class="m3d-preview-spinner"></div>
-          <span>3D загварыг ачаалж байна…</span>
-        </div>
-        <div class="m3d-hints">
-          <span>🖱 Drag to rotate</span>
-          <span>🔍 Scroll to zoom</span>
-        </div>
-      </div>
+      <div class="m3d-slot" id="m3d-slot"></div>
     </div>
   </div>
 </section>
 
-<div id="m3d-modal" class="m3d-modal" aria-hidden="true" role="dialog" aria-label="3D Explorer">
-  <div class="m3d-frame">
-    <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
-    <div class="m3d-loading" id="m3d-loading">Ачаалж байна…</div>
-    <iframe id="m3d-iframe" class="m3d-iframe" src="" allow="fullscreen"
-            allowfullscreen loading="lazy" title="Namir 3D Explorer"></iframe>
+<!-- Preview + backdrop + close — JS-ээр document.body руу нүүлгэнэ -->
+<div class="m3d-preview" id="m3d-preview">
+  <span class="m3d-live-badge" id="m3d-live-badge">LIVE 3D MODEL</span>
+  <button class="m3d-fs-btn" id="m3d-fs-btn" type="button"
+          onclick="m3dOpen()" aria-label="Fullscreen">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+      <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
+    </svg>
+  </button>
+  <iframe class="m3d-iframe" id="m3d-iframe"
+          data-src="https://namir-3d-explorer.vercel.app/"
+          title="Namir 3D Explorer"
+          loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+  <div class="m3d-placeholder" id="m3d-placeholder">
+    <div class="m3d-spinner"></div>
+    <span>3D загварыг ачаалж байна…</span>
+  </div>
+  <div class="m3d-hints" id="m3d-hints">
+    <span>🖱 Drag to rotate</span>
+    <span>🔍 Scroll to zoom</span>
   </div>
 </div>
+<div id="m3d-backdrop" class="m3d-backdrop" aria-hidden="true"></div>
+<button id="m3d-close" class="m3d-close" type="button" aria-label="Хаах">&times;</button>
 
 <style>
   /* ========== Hero section ========== */
@@ -89,21 +96,33 @@
   .m3d-cta:active { transform: translateY(0); }
   .m3d-play { font-size: 12px; }
 
-  /* --- Right column --- */
-  .m3d-preview {
-    position: relative;
+  /* Slot: hero дотор preview-ийн орон зайг хадгалдаг хоосон box */
+  .m3d-slot {
     aspect-ratio: 4 / 3;
+    width: 100%;
+  }
+
+  /* ========== Preview — body-appended, JS-ээр байрлана ========== */
+  .m3d-preview {
+    position: fixed;
+    /* top/left/width/height — JS-ээр slot-той тааруулна */
     border-radius: 14px; overflow: hidden;
     background: #0B2A3A;
     box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    z-index: 999999;
+    box-sizing: border-box;
+    visibility: hidden;  /* JS syncToSlot дуудагдтал */
   }
-  .m3d-preview-iframe {
+  .m3d-preview.ready { visibility: visible; }
+  .m3d-preview.fullscreen { transition: top .35s ease, left .35s ease, right .35s ease, bottom .35s ease, border-radius .35s ease; }
+
+  .m3d-iframe {
     width: 100%; height: 100%; border: 0; display: block;
     opacity: 0; transition: opacity .4s ease;
   }
-  .m3d-preview-iframe.ready { opacity: 1; }
+  .m3d-iframe.ready { opacity: 1; }
 
-  .m3d-preview-placeholder {
+  .m3d-placeholder {
     position: absolute; inset: 0; z-index: 1;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 14px;
@@ -111,10 +130,8 @@
     color: rgba(255,255,255,0.85); font-size: 14px;
     transition: opacity .4s ease;
   }
-  .m3d-preview-placeholder.hidden {
-    opacity: 0; pointer-events: none;
-  }
-  .m3d-preview-spinner {
+  .m3d-placeholder.hidden { opacity: 0; pointer-events: none; }
+  .m3d-spinner {
     width: 36px; height: 36px;
     border: 3px solid rgba(255,255,255,0.15);
     border-top-color: #0690ce;
@@ -129,6 +146,7 @@
     font-size: 11px; font-weight: 700; letter-spacing: 1px;
     border-radius: 4px;
     display: inline-flex; align-items: center; gap: 6px;
+    transition: opacity .3s;
   }
   .m3d-live-badge::before {
     content: ''; width: 8px; height: 8px; border-radius: 50%;
@@ -145,7 +163,7 @@
     width: 40px; height: 40px; border: 0; border-radius: 8px;
     background: rgba(0,0,0,0.6); color: #fff;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: background .2s, transform .2s;
+    transition: background .2s, transform .2s, opacity .3s;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
@@ -158,59 +176,49 @@
     color: #fff; font-size: 13px;
     display: flex; gap: 16px;
     pointer-events: none;
+    transition: opacity .3s;
   }
 
-  /* ========== Modal (fullscreen) ========== */
-  .m3d-modal {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 2147483647;
-    align-items: center; justify-content: center;
-    padding: 40px;
-    box-sizing: border-box;
-  }
-  .m3d-modal.open { display: flex; }
-
-  .m3d-frame {
-    position: relative;
-    width: 100%; height: 100%;
+  /* ========== Fullscreen mode ========== */
+  .m3d-preview.fullscreen {
+    position: fixed;
+    top: 40px !important; left: 40px !important;
+    right: 40px !important; bottom: 40px !important;
+    width: auto !important; height: auto !important;
     max-width: 1400px;
-    border-radius: 12px; overflow: hidden;
-    background: #0B2A3A;
+    margin: 0 auto;
+    border-radius: 12px;
+    z-index: 2147483647;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   }
-
-  .m3d-iframe {
-    width: 100%; height: 100%; border: 0; display: block;
-    opacity: 0; transition: opacity .3s ease;
+  .m3d-preview.fullscreen .m3d-live-badge,
+  .m3d-preview.fullscreen .m3d-fs-btn,
+  .m3d-preview.fullscreen .m3d-hints {
+    opacity: 0; pointer-events: none;
   }
-  .m3d-iframe.ready { opacity: 1; }
+
+  .m3d-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 2147483646;
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, visibility .3s;
+  }
+  .m3d-backdrop.open { opacity: 1; visibility: visible; }
 
   .m3d-close {
-    position: absolute; top: 12px; right: 12px; z-index: 10;
+    position: fixed; top: 12px; right: 12px;
+    z-index: 2147483647;
     width: 44px; height: 44px; border: 0; border-radius: 50%;
     background: rgba(255,255,255,0.95); color: #333;
     font-size: 28px; line-height: 1; cursor: pointer;
     box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    display: flex; align-items: center; justify-content: center;
+    display: none; align-items: center; justify-content: center;
     transition: background .2s, transform .2s;
-    pointer-events: auto;
   }
+  .m3d-close.open { display: flex; }
   .m3d-close:hover { background: #fff; transform: scale(1.08); }
 
-  .m3d-loading {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    color: #fff; font-size: 15px;
-    display: flex; align-items: center; gap: 10px;
-    z-index: 1;
-  }
-  .m3d-loading::before {
-    content: ''; width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #0690ce; border-radius: 50%;
-    animation: m3d-spin 0.8s linear infinite;
-  }
   @keyframes m3d-spin { to { transform: rotate(360deg); } }
 
   /* ========== Responsive ========== */
@@ -218,9 +226,12 @@
     .m3d-hero-inner { grid-template-columns: 1fr; gap: 30px; }
     .m3d-hero-title { font-size: 36px; }
     .m3d-hero-tag { font-size: 16px; }
-    .m3d-preview { aspect-ratio: 16 / 10; }
-    .m3d-modal { padding: 20px; }
-    .m3d-frame { max-width: none; border-radius: 10px; }
+    .m3d-slot { aspect-ratio: 16 / 10; }
+    .m3d-preview.fullscreen {
+      top: 20px !important; left: 20px !important;
+      right: 20px !important; bottom: 20px !important;
+      border-radius: 10px;
+    }
   }
 
   @media (max-width: 640px) {
@@ -231,87 +242,129 @@
       padding: 14px 24px; font-size: 15px;
       width: 100%; max-width: 320px; justify-content: center;
     }
-    .m3d-preview { aspect-ratio: 4 / 3; border-radius: 10px; }
+    .m3d-slot { aspect-ratio: 4 / 3; }
+    .m3d-preview { border-radius: 10px; }
     .m3d-live-badge { font-size: 10px; padding: 5px 10px; }
     .m3d-fs-btn { width: 36px; height: 36px; }
     .m3d-hints { font-size: 12px; padding: 10px 12px; }
-    .m3d-modal { padding: 0; }
-    .m3d-frame { border-radius: 0; box-shadow: none; }
+    .m3d-preview.fullscreen {
+      top: 0 !important; left: 0 !important;
+      right: 0 !important; bottom: 0 !important;
+      border-radius: 0; box-shadow: none;
+    }
     .m3d-close { top: 10px; right: 10px; width: 42px; height: 42px; font-size: 26px; }
-  }
-
-  @supports (height: 100dvh) {
-    .m3d-modal { height: 100dvh; }
   }
 </style>
 
 <script>
   (function () {
-    var URL_3D = 'https://namir-3d-explorer.vercel.app/';
-    var modal = document.getElementById('m3d-modal');
+    var slot = document.getElementById('m3d-slot');
+    var preview = document.getElementById('m3d-preview');
     var iframe = document.getElementById('m3d-iframe');
-    var loading = document.getElementById('m3d-loading');
-    var previewIframe = document.getElementById('m3d-preview-iframe');
-    var previewPlaceholder = document.getElementById('m3d-preview-placeholder');
+    var placeholder = document.getElementById('m3d-placeholder');
+    var backdrop = document.getElementById('m3d-backdrop');
+    var closeBtn = document.getElementById('m3d-close');
 
-    if (modal.parentNode !== document.body) {
-      document.body.appendChild(modal);
-    }
+    // Preview, backdrop, close-г document.body руу нүүлгэнэ.
+    // Iframe.src хараахан тохируулаагүй тул reload гарахгүй.
+    // WordPress theme-ийн ямар ч stacking context / transform-оос гарна.
+    document.body.appendChild(preview);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(closeBtn);
 
-    // Preview iframe-ийг зөвхөн viewport-д ойртсон үед ачаална
-    // (page load-ыг хөнгөвчилнө — 3D app хүнд WebGL)
-    function loadPreview() {
-      if (!previewIframe || previewIframe.src) return;
-      previewIframe.src = previewIframe.dataset.src;
-      previewIframe.addEventListener('load', function onLoad() {
-        previewIframe.classList.add('ready');
-        if (previewPlaceholder) previewPlaceholder.classList.add('hidden');
-        previewIframe.removeEventListener('load', onLoad);
+    var isLoaded = false;
+
+    // Iframe-г ЗӨВХӨН НЭГ УДАА ачаална
+    function loadIframe() {
+      if (isLoaded || !iframe.dataset.src) return;
+      isLoaded = true;
+      iframe.src = iframe.dataset.src;
+      iframe.addEventListener('load', function onLoad() {
+        iframe.classList.add('ready');
+        if (placeholder) placeholder.classList.add('hidden');
+        iframe.removeEventListener('load', onLoad);
       });
     }
 
-    if ('IntersectionObserver' in window && previewIframe) {
+    // Preview-г slot байрлалд тааруулна (position: fixed — viewport rect)
+    var syncPending = false;
+    function syncToSlot() {
+      if (preview.classList.contains('fullscreen')) return;
+      var rect = slot.getBoundingClientRect();
+      if (rect.width < 1 || rect.height < 1) return;
+      preview.style.top = rect.top + 'px';
+      preview.style.left = rect.left + 'px';
+      preview.style.width = rect.width + 'px';
+      preview.style.height = rect.height + 'px';
+      // 1-р удаа dimension тохирсны дараа харагдуулна
+      if (!preview.classList.contains('ready')) preview.classList.add('ready');
+    }
+    function scheduleSync() {
+      if (syncPending) return;
+      syncPending = true;
+      requestAnimationFrame(function () {
+        syncPending = false;
+        syncToSlot();
+      });
+    }
+
+    // Эхний sync — layout бэлэн болтол хэд дахин
+    syncToSlot();
+    requestAnimationFrame(syncToSlot);
+    setTimeout(syncToSlot, 100);
+    setTimeout(syncToSlot, 500);
+
+    window.addEventListener('scroll', scheduleSync, { passive: true });
+    window.addEventListener('resize', scheduleSync);
+    window.addEventListener('load', syncToSlot);
+    if ('ResizeObserver' in window) {
+      var ro = new ResizeObserver(scheduleSync);
+      ro.observe(document.body);
+      ro.observe(slot);
+    }
+
+    // Scroll хийж slot харагдах үед iframe ачаална
+    if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            loadPreview();
+            loadIframe();
             io.disconnect();
           }
         });
-      }, { rootMargin: '200px 0px' });  // 200px өмнө нь эхэлж ачаална
-      io.observe(previewIframe.parentNode);
+      }, { rootMargin: '200px 0px' });
+      io.observe(slot);
     } else {
-      // Fallback: хуучин browser-т шууд ачаална
-      loadPreview();
+      loadIframe();
     }
 
     window.m3dOpen = function () {
-      iframe.src = URL_3D;
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden', 'false');
+      loadIframe();
+      preview.classList.add('fullscreen');
+      backdrop.classList.add('open');
+      closeBtn.classList.add('open');
+      backdrop.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
-      loading.style.display = 'flex';
-      iframe.addEventListener('load', function onLoad() {
-        iframe.classList.add('ready');
-        loading.style.display = 'none';
-        iframe.removeEventListener('load', onLoad);
-      });
     };
 
     window.m3dClose = function () {
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden', 'true');
+      preview.classList.remove('fullscreen');
+      backdrop.classList.remove('open');
+      closeBtn.classList.remove('open');
+      backdrop.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
-      iframe.classList.remove('ready');
-      iframe.src = '';
+      // Fullscreen-ээс гарсны дараа slot байрлалд эргэж очих
+      syncToSlot();
+      requestAnimationFrame(syncToSlot);
     };
 
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && modal.classList.contains('open')) window.m3dClose();
-    });
+    closeBtn.addEventListener('click', window.m3dClose);
+    backdrop.addEventListener('click', window.m3dClose);
 
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) window.m3dClose();
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && preview.classList.contains('fullscreen')) {
+        window.m3dClose();
+      }
     });
   })();
 </script>
