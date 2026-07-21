@@ -24,9 +24,14 @@
             <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
           </svg>
         </button>
-        <iframe class="m3d-preview-iframe" src="https://namir-3d-explorer.vercel.app/"
+        <iframe class="m3d-preview-iframe" id="m3d-preview-iframe"
+                data-src="https://namir-3d-explorer.vercel.app/"
                 title="Namir 3D Explorer (preview)"
                 loading="lazy" allow="fullscreen"></iframe>
+        <div class="m3d-preview-placeholder" id="m3d-preview-placeholder">
+          <div class="m3d-preview-spinner"></div>
+          <span>3D загварыг ачаалж байна…</span>
+        </div>
         <div class="m3d-hints">
           <span>🖱 Drag to rotate</span>
           <span>🔍 Scroll to zoom</span>
@@ -94,6 +99,27 @@
   }
   .m3d-preview-iframe {
     width: 100%; height: 100%; border: 0; display: block;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .m3d-preview-iframe.ready { opacity: 1; }
+
+  .m3d-preview-placeholder {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+    background: linear-gradient(135deg, #0B2A3A 0%, #134B63 100%);
+    color: rgba(255,255,255,0.85); font-size: 14px;
+    transition: opacity .4s ease;
+  }
+  .m3d-preview-placeholder.hidden {
+    opacity: 0; pointer-events: none;
+  }
+  .m3d-preview-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top-color: #0690ce;
+    border-radius: 50%;
+    animation: m3d-spin 0.9s linear infinite;
   }
 
   .m3d-live-badge {
@@ -225,9 +251,38 @@
     var modal = document.getElementById('m3d-modal');
     var iframe = document.getElementById('m3d-iframe');
     var loading = document.getElementById('m3d-loading');
+    var previewIframe = document.getElementById('m3d-preview-iframe');
+    var previewPlaceholder = document.getElementById('m3d-preview-placeholder');
 
     if (modal.parentNode !== document.body) {
       document.body.appendChild(modal);
+    }
+
+    // Preview iframe-ийг зөвхөн viewport-д ойртсон үед ачаална
+    // (page load-ыг хөнгөвчилнө — 3D app хүнд WebGL)
+    function loadPreview() {
+      if (!previewIframe || previewIframe.src) return;
+      previewIframe.src = previewIframe.dataset.src;
+      previewIframe.addEventListener('load', function onLoad() {
+        previewIframe.classList.add('ready');
+        if (previewPlaceholder) previewPlaceholder.classList.add('hidden');
+        previewIframe.removeEventListener('load', onLoad);
+      });
+    }
+
+    if ('IntersectionObserver' in window && previewIframe) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            loadPreview();
+            io.disconnect();
+          }
+        });
+      }, { rootMargin: '200px 0px' });  // 200px өмнө нь эхэлж ачаална
+      io.observe(previewIframe.parentNode);
+    } else {
+      // Fallback: хуучин browser-т шууд ачаална
+      loadPreview();
     }
 
     window.m3dOpen = function () {
