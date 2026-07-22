@@ -1,54 +1,37 @@
 <!--
-  MEKHLOPAT — Hero section: зүүн талд компанийн танилцуулга,
-  баруун талд амьд 3D preview + fullscreen товч
-  WordPress-ийн Custom HTML block руу энэ бүхлээр нь paste хийнэ.
-
-  Popover API ашигласан (browser native top-layer):
-  - Preview slot дотор энгийн position:absolute-аар байрлана
-  - Fullscreen нээхэд `popover="auto"` attribute нэмж showPopover() дуудна
-    — element top-layer руу шилжинэ, ямар ч stacking context-с гарна
-  - Iframe DOM дотор ХӨДЛӨХГҮЙ — reload хийхгүй, state үлдэнэ
-  - Escape / outside click auto-close (light-dismiss)
-  - ::backdrop pseudo-element нь харанхуй давхарга
-
-  Browser support: Chrome 114+ / Safari 17+ / Firefox 125+ (2024-оос хойш)
-  Хуучин browser-т fallback байхгүй — 3D зөвхөн preview-т харагдана.
+  MEKHLOPAT — Hero: зүүн талд танилцуулга (center-жсэн), баруун талд 3D preview.
+  WordPress-ийн Custom HTML block руу paste хийнэ.
+  Popover API-р fullscreen. Iframe reload хийхгүй.
 -->
 
 <section class="m3d-hero">
   <div class="m3d-hero-inner">
-    <div class="m3d-hero-left">
-      <h1 class="m3d-hero-title">Mekhlopat LLC</h1>
-      <p class="m3d-hero-tag">
-        Mining solutions for open-pit and underground operations
+    <div class="m3d-hero-copy">
+      <h2 class="m3d-hero-title">Mekhlopat LLC</h2>
+      <p class="m3d-hero-lead">
+        A leading provider of comprehensive solutions for the enrichment
+        of open-pit and underground mines — enhancing operational efficiency
+        and reliability in Mongolia's mining industry.
       </p>
       <button class="m3d-cta" type="button" onclick="m3dOpen()">
-        <span class="m3d-play">▶</span> Explore in 3D
+        <span class="m3d-cta-icon">▶</span> Explore in 3D
       </button>
     </div>
 
-    <div class="m3d-hero-right">
-      <div class="m3d-slot">
-        <div class="m3d-preview" id="m3d-preview">
-          <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
-          <span class="m3d-live-badge">LIVE 3D MODEL</span>
-          <button class="m3d-fs-btn" type="button" onclick="m3dOpen()" aria-label="Fullscreen">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
-            </svg>
-          </button>
-          <iframe class="m3d-iframe" id="m3d-iframe"
-                  data-src="https://namir-3d-explorer.vercel.app/"
-                  title="Namir 3D Explorer"
-                  loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-          <div class="m3d-placeholder" id="m3d-placeholder">
-            <div class="m3d-spinner"></div>
-            <span>3D загварыг ачаалж байна…</span>
-          </div>
-          <div class="m3d-hints">
-            <span>🖱 Drag to rotate</span>
-            <span>🔍 Scroll to zoom</span>
-          </div>
+    <div class="m3d-slot">
+      <div class="m3d-preview" id="m3d-preview">
+        <button class="m3d-close" type="button" onclick="m3dClose()" aria-label="Хаах">&times;</button>
+        <button class="m3d-fs-btn" type="button" onclick="m3dOpen()" aria-label="Fullscreen">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
+          </svg>
+        </button>
+        <iframe class="m3d-iframe" id="m3d-iframe"
+                data-src="https://namir-3d-explorer.vercel.app/"
+                title="Namir 3D Explorer"
+                loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+        <div class="m3d-placeholder" id="m3d-placeholder">
+          <div class="m3d-spinner"></div>
         </div>
       </div>
     </div>
@@ -56,69 +39,165 @@
 </section>
 
 <style>
-  /* ========== Hero section ========== */
   .m3d-hero {
-    padding: 60px 20px;
-    background: linear-gradient(135deg, #0B2A3A 0%, #134B63 100%);
+    background: transparent !important;
+    /* WordPress-ийн parent container-ийн padding-аас гарч, дэлгэцийн бүх өргөнөөр */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    box-sizing: border-box;
+    padding: 40px 100px;
   }
   .m3d-hero-inner {
-    max-width: 1200px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 40px; align-items: center;
+    width: 100%;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 48px;
+    align-items: center;
   }
 
-  /* --- Left column --- */
-  .m3d-hero-left { color: #fff; }
+  /* --- Copy column --- */
+  .m3d-hero-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+  }
   .m3d-hero-title {
-    font-size: 44px; font-weight: 800; margin: 0 0 16px;
-    line-height: 1.1; letter-spacing: -0.5px;
+    margin: 0;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
     color: #ff6900;
   }
-  .m3d-hero-tag {
-    font-size: 18px; line-height: 1.5;
-    opacity: 0.9; margin: 0 0 28px; max-width: 460px;
+  .m3d-hero-lead {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.92);
+    max-width: 46ch;
   }
 
   .m3d-cta {
-    display: inline-flex; align-items: center; gap: 10px;
-    padding: 16px 32px; background: #0690ce; color: #fff;
-    border: 0; border-radius: 10px;
-    font-size: 17px; font-weight: 600; cursor: pointer;
-    transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
-    box-shadow: 0 4px 14px rgba(6,144,206,0.5);
+    position: relative;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 16px 34px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #000000 45%, #0d0d0d 100%);
+    color: #ff8a2a;
+    border: 1px solid rgba(255, 138, 42, 0.35);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    text-shadow:
+      0 0 6px rgba(255, 138, 42, 0.85),
+      0 0 14px rgba(255, 105, 0, 0.55),
+      0 0 28px rgba(255, 105, 0, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+      0 6px 20px rgba(0, 0, 0, 0.55),
+      0 0 22px rgba(255, 105, 0, 0.25);
+    transition: transform .25s ease, box-shadow .25s ease, color .25s ease;
+    animation: m3d-cta-glow 2.6s ease-in-out infinite;
+  }
+  .m3d-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 35%,
+      rgba(255, 255, 255, 0.14) 48%,
+      rgba(255, 200, 120, 0.22) 50%,
+      rgba(255, 255, 255, 0.14) 52%,
+      transparent 65%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    animation: m3d-cta-shine 3.4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .m3d-cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 120%, rgba(255,105,0,0.35), transparent 60%);
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: -1;
   }
   .m3d-cta:hover {
-    background: #0578ac; transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(6,144,206,0.6);
+    color: #ffb266;
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+      0 10px 28px rgba(0, 0, 0, 0.65),
+      0 0 36px rgba(255, 105, 0, 0.55);
   }
   .m3d-cta:active { transform: translateY(0); }
-  .m3d-play { font-size: 12px; }
+  .m3d-cta-icon {
+    font-size: 11px;
+    filter: drop-shadow(0 0 6px rgba(255, 138, 42, 0.9));
+  }
+  @keyframes m3d-cta-shine {
+    0%   { transform: translateX(-100%); }
+    55%  { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+  }
+  @keyframes m3d-cta-glow {
+    0%, 100% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+        0 6px 20px rgba(0, 0, 0, 0.55),
+        0 0 22px rgba(255, 105, 0, 0.25);
+    }
+    50% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+        0 6px 20px rgba(0, 0, 0, 0.55),
+        0 0 34px rgba(255, 105, 0, 0.55);
+    }
+  }
 
-  /* Slot: hero дотор preview-ийн орон зайг тодорхойлно */
+  /* --- 3D slot --- */
   .m3d-slot {
     position: relative;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10;
     width: 100%;
   }
 
-  /* ========== Preview — inline slot дотор ========== */
   .m3d-preview {
     position: absolute;
     inset: 0;
     width: 100%; height: 100%;
-    border-radius: 14px; overflow: hidden;
-    background: #0B2A3A;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    overflow: hidden;
+    background: transparent !important;
     box-sizing: border-box;
-    /* Popover-т ашиглагдах default styling reset */
     margin: 0; padding: 0; border: 0;
+    border-radius: 14px;
   }
 
-  /* ========== Popover (fullscreen) mode ========== */
   .m3d-preview[popover] {
-    /* Top-layer-т render хийгдэнэ — z-index / stacking context үл хамаарна.
-       position: fixed зайлшгүй — эс тэгвэл .m3d-preview base rule-ын
-       position: absolute нь slot-т багтчихдаг. */
     position: fixed !important;
     inset: 40px;
     width: auto; height: auto;
@@ -127,35 +206,22 @@
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   }
+  .m3d-preview::backdrop { background: rgba(0,0,0,0.92); }
 
-  /* Backdrop (харанхуй давхарга) — popover open үед л харагдана */
-  .m3d-preview::backdrop {
-    background: rgba(0,0,0,0.92);
-  }
+  .m3d-preview[popover] .m3d-fs-btn { display: none; }
+  .m3d-preview[popover] .m3d-close { display: flex; }
 
-  /* Fullscreen үед badge/hints/fs-btn нуугдана, close товч гарна */
-  .m3d-preview[popover] .m3d-live-badge,
-  .m3d-preview[popover] .m3d-fs-btn,
-  .m3d-preview[popover] .m3d-hints {
-    display: none;
-  }
-  .m3d-preview[popover] .m3d-close {
-    display: flex;
-  }
-
-  /* ========== Iframe ========== */
   .m3d-iframe {
     width: 100%; height: 100%; border: 0; display: block;
+    background: transparent !important;
     opacity: 0; transition: opacity .4s ease;
   }
   .m3d-iframe.ready { opacity: 1; }
 
   .m3d-placeholder {
     position: absolute; inset: 0; z-index: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px;
-    background: linear-gradient(135deg, #0B2A3A 0%, #134B63 100%);
-    color: rgba(255,255,255,0.85); font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent !important;
     transition: opacity .4s ease;
   }
   .m3d-placeholder.hidden { opacity: 0; pointer-events: none; }
@@ -167,25 +233,6 @@
     animation: m3d-spin 0.9s linear infinite;
   }
   @keyframes m3d-spin { to { transform: rotate(360deg); } }
-
-  /* ========== Overlays (badge, buttons, hints) ========== */
-  .m3d-live-badge {
-    position: absolute; top: 14px; left: 14px; z-index: 3;
-    padding: 6px 12px;
-    background: rgba(220,38,38,0.95); color: #fff;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    border-radius: 4px;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .m3d-live-badge::before {
-    content: ''; width: 8px; height: 8px; border-radius: 50%;
-    background: #fff;
-    animation: m3d-pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes m3d-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
 
   .m3d-fs-btn {
     position: absolute; top: 12px; right: 12px; z-index: 3;
@@ -210,45 +257,23 @@
   }
   .m3d-close:hover { background: #fff; transform: scale(1.08); }
 
-  .m3d-hints {
-    position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
-    padding: 12px 16px;
-    background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
-    color: #fff; font-size: 13px;
-    display: flex; gap: 16px;
-    pointer-events: none;
-  }
-
-  /* ========== Responsive ========== */
   @media (max-width: 1024px) {
-    .m3d-hero-inner { grid-template-columns: 1fr; gap: 30px; }
-    .m3d-hero-title { font-size: 36px; }
-    .m3d-hero-tag { font-size: 16px; }
+    .m3d-hero-inner { grid-template-columns: 1fr; gap: 28px; }
+    .m3d-hero-copy { text-align: center; align-items: center; }
+    .m3d-cta { align-self: center; }
+    .m3d-hero-title { font-size: 32px; }
+    .m3d-hero-lead { font-size: 18px; }
     .m3d-slot { aspect-ratio: 16 / 10; }
-    .m3d-preview[popover] {
-      inset: 20px;
-      border-radius: 10px;
-    }
+    .m3d-preview[popover] { inset: 20px; border-radius: 10px; }
   }
-
   @media (max-width: 640px) {
-    .m3d-hero { padding: 40px 16px; }
-    .m3d-hero-title { font-size: 28px; }
-    .m3d-hero-tag { font-size: 15px; margin-bottom: 22px; }
-    .m3d-cta {
-      padding: 14px 24px; font-size: 15px;
-      width: 100%; max-width: 320px; justify-content: center;
-    }
+    .m3d-hero { padding: 24px 20px; }
+    .m3d-hero-title { font-size: 26px; }
+    .m3d-hero-lead { font-size: 16px; line-height: 1.55; }
     .m3d-slot { aspect-ratio: 4 / 3; }
     .m3d-preview { border-radius: 10px; }
-    .m3d-live-badge { font-size: 10px; padding: 5px 10px; }
     .m3d-fs-btn { width: 36px; height: 36px; }
-    .m3d-hints { font-size: 12px; padding: 10px 12px; }
-    .m3d-preview[popover] {
-      inset: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }
+    .m3d-preview[popover] { inset: 0; border-radius: 0; box-shadow: none; }
     .m3d-close { top: 10px; right: 10px; width: 42px; height: 42px; font-size: 26px; }
   }
 </style>
@@ -259,11 +284,8 @@
     var iframe = document.getElementById('m3d-iframe');
     var placeholder = document.getElementById('m3d-placeholder');
     var isLoaded = false;
-
-    // Popover API-ийн дэмжлэгийг шалгах
     var supportsPopover = typeof preview.showPopover === 'function';
 
-    // Iframe-г ЗӨВХӨН НЭГ УДАА ачаална
     function loadIframe() {
       if (isLoaded || !iframe.dataset.src) return;
       isLoaded = true;
@@ -275,7 +297,6 @@
       });
     }
 
-    // Scroll хийж slot харагдах үед iframe ачаална
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
@@ -304,11 +325,9 @@
     window.m3dClose = function () {
       if (supportsPopover && preview.matches(':popover-open')) {
         preview.hidePopover();
-        // Cleanup toggle event-т хийгдэнэ
       }
     };
 
-    // Toggle event нь бүх close төрөл (button, ESC, outside click)-т ажиллана
     if (supportsPopover) {
       preview.addEventListener('toggle', function (e) {
         if (e.newState === 'closed') {
