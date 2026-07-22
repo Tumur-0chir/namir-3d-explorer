@@ -510,11 +510,13 @@ function populateSidebar() {
 
             const catLi = document.createElement('li');
             catLi.className = 'sidebar-category';
+            if (cat.color) {
+                catLi.style.setProperty('--cat-color', cat.color);
+            }
 
             const catTitle = document.createElement('span');
             catTitle.className = 'category-title';
             catTitle.textContent = catName;
-            if (cat.color) catTitle.style.borderLeftColor = cat.color;
 
             if (cat.headerIndex !== -1) {
                 catTitle.addEventListener('click', () => {
@@ -1428,6 +1430,8 @@ function setSidebarOverlayHidden(hidden) {
     if (burger) burger.style.visibility = vis;
 }
 
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
 if (hamburgerBtn && leftSidebar) {
     hamburgerBtn.addEventListener('click', () => {
         const opening = !leftSidebar.classList.contains('active');
@@ -1438,6 +1442,13 @@ if (hamburgerBtn && leftSidebar) {
 
 if (closeLeftSidebarBtn && leftSidebar) {
     closeLeftSidebarBtn.addEventListener('click', () => {
+        leftSidebar.classList.remove('active');
+        setSidebarOverlayHidden(false);
+    });
+}
+
+if (sidebarBackdrop && leftSidebar) {
+    sidebarBackdrop.addEventListener('click', () => {
         leftSidebar.classList.remove('active');
         setSidebarOverlayHidden(false);
     });
