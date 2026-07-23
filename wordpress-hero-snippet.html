@@ -7,11 +7,9 @@
 <section class="m3d-hero">
   <div class="m3d-hero-inner">
     <div class="m3d-hero-copy">
-      <h2 class="m3d-hero-title">Mekhlopat LLC</h2>
+      <h2 class="m3d-hero-title">Explore Our Solution Mapping</h2>
       <p class="m3d-hero-lead">
-        A leading provider of comprehensive solutions for the enrichment
-        of open-pit and underground mines — enhancing operational efficiency
-        and reliability in Mongolia's mining industry.
+        Discover Mekhlopat’s integrated mining solutions—from surface and underground operations to mineral processing—designed to improve safety, productivity, and operational reliability.
       </p>
       <button class="m3d-cta" type="button" onclick="m3dOpen()">
         <span class="m3d-cta-icon">▶</span> Explore in 3D
@@ -53,7 +51,8 @@
   }
   .m3d-hero-inner {
     width: 100%;
-    margin: 0;
+    max-width: 1400px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1.15fr;
     gap: 48px;
@@ -69,7 +68,7 @@
   }
   .m3d-hero-title {
     margin: 0;
-    font-size: 40px;
+    font-size: 28px;
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.5px;
@@ -77,9 +76,9 @@
   }
   .m3d-hero-lead {
     margin: 0;
-    font-size: 20px;
+    font-size: 17px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.92);
+    color: #1a1a1a;
     max-width: 46ch;
   }
 
@@ -109,8 +108,8 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.08),
       inset 0 -2px 6px rgba(0, 0, 0, 0.6),
-      0 6px 20px rgba(0, 0, 0, 0.55),
-      0 0 22px rgba(255, 105, 0, 0.25);
+      0 6px 18px rgba(0, 0, 0, 0.35),
+      0 0 14px rgba(255, 105, 0, 0.18);
     transition: transform .25s ease, box-shadow .25s ease, color .25s ease;
     animation: m3d-cta-glow 2.6s ease-in-out infinite;
   }
@@ -149,8 +148,8 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.12),
       inset 0 -2px 6px rgba(0, 0, 0, 0.6),
-      0 10px 28px rgba(0, 0, 0, 0.65),
-      0 0 36px rgba(255, 105, 0, 0.55);
+      0 10px 24px rgba(0, 0, 0, 0.4),
+      0 0 24px rgba(255, 105, 0, 0.35);
   }
   .m3d-cta:active { transform: translateY(0); }
   .m3d-cta-icon {
@@ -167,15 +166,15 @@
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.08),
         inset 0 -2px 6px rgba(0, 0, 0, 0.6),
-        0 6px 20px rgba(0, 0, 0, 0.55),
-        0 0 22px rgba(255, 105, 0, 0.25);
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        0 0 14px rgba(255, 105, 0, 0.18);
     }
     50% {
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.08),
         inset 0 -2px 6px rgba(0, 0, 0, 0.6),
-        0 6px 20px rgba(0, 0, 0, 0.55),
-        0 0 34px rgba(255, 105, 0, 0.55);
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        0 0 22px rgba(255, 105, 0, 0.35);
     }
   }
 
@@ -261,15 +260,15 @@
     .m3d-hero-inner { grid-template-columns: 1fr; gap: 28px; }
     .m3d-hero-copy { text-align: center; align-items: center; }
     .m3d-cta { align-self: center; }
-    .m3d-hero-title { font-size: 32px; }
-    .m3d-hero-lead { font-size: 18px; }
+    .m3d-hero-title { font-size: 24px; }
+    .m3d-hero-lead { font-size: 16px; }
     .m3d-slot { aspect-ratio: 16 / 10; }
     .m3d-preview[popover] { inset: 20px; border-radius: 10px; }
   }
   @media (max-width: 640px) {
     .m3d-hero { padding: 24px 20px; }
-    .m3d-hero-title { font-size: 26px; }
-    .m3d-hero-lead { font-size: 16px; line-height: 1.55; }
+    .m3d-hero-title { font-size: 20px; }
+    .m3d-hero-lead { font-size: 15px; line-height: 1.55; }
     .m3d-slot { aspect-ratio: 4 / 3; }
     .m3d-preview { border-radius: 10px; }
     .m3d-fs-btn { width: 36px; height: 36px; }
