@@ -1030,7 +1030,7 @@ function showInfoPanel(data) {
                         ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ''}
                     </div>` : ''}
 
-                    <button class="action-button primary" id="learn-more-btn">Find Out More</button>
+                    ${(data.button1Url && data.button1Url !== '#' && /^https?:\/\//i.test(data.button1Url)) ? `<button class="action-button primary" id="learn-more-btn">Find Out More</button>` : ''}
                 </div>
             </div>
         </div>
