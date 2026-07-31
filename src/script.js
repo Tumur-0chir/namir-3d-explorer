@@ -1025,12 +1025,13 @@ function showInfoPanel(data) {
                 </div>
                 
                 <div class="panel-bottom-section">
-                    ${(data.phone || data.email) ? `<div class="contact-info">
-                        ${data.phone ? `<p><strong>Tel:</strong> ${data.phone}</p>` : ''}
-                        ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ''}
-                    </div>` : ''}
-
-                    ${(data.button1Url && data.button1Url !== '#' && /^https?:\/\//i.test(data.button1Url)) ? `<button class="action-button primary" id="learn-more-btn">Find Out More</button>` : ''}
+                    ${(data.button1Url && data.button1Url !== '#' && /^https?:\/\//i.test(data.button1Url)) ? `
+                        ${(data.phone || data.email) ? `<div class="contact-info">
+                            ${data.phone ? `<p><strong>Tel:</strong> ${data.phone}</p>` : ''}
+                            ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ''}
+                        </div>` : ''}
+                        <button class="action-button primary" id="learn-more-btn">Find Out More</button>
+                    ` : ''}
                 </div>
             </div>
         </div>
