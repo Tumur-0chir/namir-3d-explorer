@@ -1474,6 +1474,21 @@ if (closePanelBtn) {
     });
 }
 
+// Broadcast info-panel state to parent frame (WordPress fullscreen overlay)
+const infoPanelEl = document.getElementById('info-panel');
+if (infoPanelEl && window.parent !== window) {
+    const notifyPanelState = () => {
+        window.parent.postMessage(
+            { type: 'm3d-panel', open: infoPanelEl.classList.contains('active') },
+            '*'
+        );
+    };
+    new MutationObserver(notifyPanelState).observe(infoPanelEl, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+}
+
 /**
  * Lights
  */

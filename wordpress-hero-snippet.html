@@ -187,5 +187,14 @@
         }
       });
     }
+
+    // Hide outer close X while iframe info-panel is open
+    var closeBtn = preview.querySelector('.m3d-close');
+    window.addEventListener('message', function (ev) {
+      if (ev.source !== iframe.contentWindow) return;
+      var data = ev.data;
+      if (!data || data.type !== 'm3d-panel') return;
+      if (closeBtn) closeBtn.style.display = data.open ? 'none' : '';
+    });
   })();
 </script>
