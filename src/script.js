@@ -1408,7 +1408,11 @@ if (navHomeBtn) {
 function initBrandLogo() {
     const logoEl = document.querySelector('.sidebar-logo');
     if (!logoEl) return;
-    const brand = new URLSearchParams(window.location.search).get('brand') || 'mekhlopat';
+    // Brand: ?brand= param wins; otherwise detect by hostname (3d.kemex.mn -> kemex)
+    const paramBrand = new URLSearchParams(window.location.search).get('brand');
+    const hostBrand = /(^|\.)kemex\.mn$/i.test(window.location.hostname) ? 'kemex' : 'mekhlopat';
+    const brand = paramBrand || hostBrand;
+    logoEl.alt = brand === 'kemex' ? 'Kemex Logo' : 'Mekhlopat Logo';
     if (brand === 'kemex') {
         logoEl.src = '/images/logos/kemex_logo1.webp';
     } else {
