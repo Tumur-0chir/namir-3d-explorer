@@ -1025,7 +1025,7 @@ function showInfoPanel(data) {
                 </div>
                 
                 <div class="panel-bottom-section">
-                    ${(data.button1Url && data.button1Url !== '#' && /^https?:\/\//i.test(data.button1Url)) ? `
+                    ${(data.button1Url && data.button1Url !== '#' && /^https?:\/\//i.test(data.button1Url) && urlMatchesBrand(data.button1Url)) ? `
                         ${(data.phone || data.email) ? `<div class="contact-info">
                             ${data.phone ? `<p><strong>Tel:</strong> ${data.phone}</p>` : ''}
                             ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ''}
@@ -1405,19 +1405,32 @@ if (navHomeBtn) {
     });
 }
 
+function detectBrand() {
+    const paramBrand = new URLSearchParams(window.location.search).get('brand');
+    if (paramBrand === 'kemex' || paramBrand === 'mekhlopat') return paramBrand;
+    return /(^|\.)kemex\.mn$/i.test(window.location.hostname) ? 'kemex' : 'mekhlopat';
+}
+const CURRENT_BRAND = detectBrand();
+
+function urlMatchesBrand(url) {
+    try {
+        const host = new URL(url).hostname.toLowerCase();
+        const isKemex = /(^|\.)kemex\.mn$/.test(host);
+        const isMekh  = /(^|\.)mekhlopat\.mn$/.test(host);
+        if (!isKemex && !isMekh) return true;
+        return CURRENT_BRAND === 'kemex' ? isKemex : isMekh;
+    } catch (_) {
+        return true;
+    }
+}
+
 function initBrandLogo() {
     const logoEl = document.querySelector('.sidebar-logo');
     if (!logoEl) return;
-    // Brand: ?brand= param wins; otherwise detect by hostname (3d.kemex.mn -> kemex)
-    const paramBrand = new URLSearchParams(window.location.search).get('brand');
-    const hostBrand = /(^|\.)kemex\.mn$/i.test(window.location.hostname) ? 'kemex' : 'mekhlopat';
-    const brand = paramBrand || hostBrand;
-    logoEl.alt = brand === 'kemex' ? 'Kemex Logo' : 'Mekhlopat Logo';
-    if (brand === 'kemex') {
-        logoEl.src = '/images/logos/kemex_logo1.webp';
-    } else {
-        logoEl.src = '/images/logos/Namir_Mekhlopat_logo_03.webp';
-    }
+    logoEl.alt = CURRENT_BRAND === 'kemex' ? 'Kemex Logo' : 'Mekhlopat Logo';
+    logoEl.src = CURRENT_BRAND === 'kemex'
+        ? '/images/logos/kemex_logo1.webp'
+        : '/images/logos/Namir_Mekhlopat_logo_03.webp';
 }
 initBrandLogo();
 
