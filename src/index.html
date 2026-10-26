@@ -8,7 +8,18 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="./panel-styles.css">
     <link rel="stylesheet" href="./z-index-fix.css">
-    <link rel="icon" type="image/png" href="/images/logos/Namir_Mekhlopat_logo_NoText.png">
+    <link rel="icon" id="brand-favicon" type="image/png" href="/images/logos/Namir_Mekhlopat_logo_NoText.png">
+    <script>
+        (function () {
+            var qp = new URLSearchParams(location.search).get('brand');
+            var isKemex = (qp === 'kemex') || (!qp && /(^|\.)kemex\.mn$/i.test(location.hostname));
+            if (isKemex) {
+                var el = document.getElementById('brand-favicon');
+                el.setAttribute('href', '/images/logos/kemex_logo1.webp');
+                el.setAttribute('type', 'image/webp');
+            }
+        })();
+    </script>
 </head>
 
 <body>
