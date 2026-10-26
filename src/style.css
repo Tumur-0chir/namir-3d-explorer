@@ -64,7 +64,14 @@ body {
 .sidebar-logo {
     height: 44px;
     width: auto;
+    max-width: 240px;
+    object-fit: contain;
+    flex-shrink: 0;
     pointer-events: auto;
+}
+.sidebar-logo.kemex {
+    height: 60px;
+    max-width: 260px;
 }
 
 /* Home reset button - floats below the navbar into the scene */
