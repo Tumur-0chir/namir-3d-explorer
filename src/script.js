@@ -1427,8 +1427,6 @@ function urlMatchesBrand(url) {
 function initBrandLogo() {
     const logoEl = document.querySelector('.sidebar-logo');
     if (!logoEl) return;
-    logoEl.classList.toggle('kemex', CURRENT_BRAND === 'kemex');
-    logoEl.classList.toggle('mekhlopat', CURRENT_BRAND !== 'kemex');
     logoEl.alt = CURRENT_BRAND === 'kemex' ? 'Kemex Logo' : 'Mekhlopat Logo';
     logoEl.src = CURRENT_BRAND === 'kemex'
         ? '/images/logos/kemex_logo1.webp'
